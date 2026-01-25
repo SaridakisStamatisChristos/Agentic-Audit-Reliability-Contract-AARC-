@@ -4,7 +4,35 @@ on:
   push:
 
 jobs:
-  placeholder:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "placeholder"
+      - uses: actions/checkout@v4
+      - name: Install TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-bibtex-extra \
+            texlive-pictures \
+            texlive-lang-english
+      - name: Verify schema
+        run: ./scripts/verify_schema.sh
+      - name: Write spec hash
+        run: ./scripts/write_spec_hash.sh
+      - name: Build paper
+        run: ./scripts/build_pdf.sh
+      - name: Build arXiv bundle
+        run: ./scripts/make_arxiv_zip.sh
+      - name: Conformance checks
+        run: ./scripts/conformance_checks.sh
+      - name: Validate arXiv zip structure
+        run: |
+          tmp_dir="$(mktemp -d)"
+          unzip -q dist/ARF_v1_0_4_arxiv.zip -d "$tmp_dir"
+          test -f "$tmp_dir/main.tex"
+          test -f "$tmp_dir/figures/arf_lifecycle.pdf"
+          test -f "$tmp_dir/figures/arf_architecture.pdf"
+          test -f "$tmp_dir/spec/ARF_STATE_VECTOR.schema.v1_0_4.json"
