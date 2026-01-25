@@ -1,1 +1,33 @@
-{}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/arf/paper/ARF_STATE_VECTOR.schema.v1_0_4.json",
+  "title": "ARF State Vector v1.0.4 (Paper Appendix)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["inputs", "outputs", "tools", "confidence", "policy"],
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

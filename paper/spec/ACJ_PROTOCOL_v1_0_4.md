@@ -1,3 +1,8 @@
-# ACJ_PROTOCOL_v1_0_4
+# ACJ Protocol (Paper Appendix) v1.0.4
 
-Placeholder paper specification content.
+The Agentic Change Journal (ACJ) protocol captures material changes to agent
+behavior and configuration. Each entry records identifiers, summaries, evidence
+references, and optional state hashes. ACJ entries are immutable and linked to
+patch ledger records when changes are applied.
+
+Refer to `spec/ACJ_PROTOCOL_v1_0_4.md` for the normative protocol.
