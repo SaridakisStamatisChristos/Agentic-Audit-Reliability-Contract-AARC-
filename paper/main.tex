@@ -1,5 +1,45 @@
-% Placeholder paper
 \documentclass{article}
+\usepackage{hyperref}
+\title{Agentic Reliability Framework v1.0.4}
+\author{Agentic Reliability Framework Contributors}
+\date{2025}
 \begin{document}
-Placeholder paper content.
+\maketitle
+
+\begin{abstract}
+The Agentic Reliability Framework (ARF) specifies a minimal runtime contract,
+change journal protocol, and patch ledger that together provide auditability
+for agentic systems. This paper summarizes the v1.0.4 release and highlights
+the interoperability and security requirements.
+\end{abstract}
+
+\section{Introduction}
+Agentic systems require consistent telemetry, change tracking, and verification
+mechanisms to safely evolve. ARF defines three core artifacts: a runtime
+contract for event streams, an Agentic Change Journal (ACJ) protocol, and a
+patch ledger for applied fixes. These artifacts provide traceability from
+runtime observations to remediation.
+
+\section{Runtime Contract}
+The runtime contract specifies task lifecycle events, state vector snapshots,
+and remediation records. State vectors must conform to the v1.0.4 schema and
+include inputs, outputs, tool usage, confidence, and policy references.
+
+\section{Agentic Change Journal}
+ACJ entries record material changes in behavior, configuration, or policy. Each
+entry references evidence from runtime telemetry and links to patch ledger
+records when changes are applied.
+
+\section{Patch Ledger}
+The patch ledger is an append-only log of applied patches, with each record
+linking back to the motivating ACJ entry. Integrity metadata is recommended to
+ensure auditability across the system lifecycle.
+
+\section{Conclusion}
+ARF v1.0.4 provides a concise, interoperable approach to reliability and
+observability for agentic systems. Future work will expand adapter guidance and
+formal validation tooling.
+
+\bibliographystyle{plain}
+\bibliography{arf}
 \end{document}
