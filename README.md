@@ -18,6 +18,8 @@ specification series.
 
 All documents in this repository are aligned to **v1.0.4**. Backwards-incompatible
 changes must increment the major or minor spec version.
+Changes to `spec/*v1_0_4*` require bumping the version and adding a changelog
+entry.
 
 ## Repository layout
 

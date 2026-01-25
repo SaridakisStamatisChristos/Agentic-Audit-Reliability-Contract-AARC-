@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "placeholder build script"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+"$repo_root/scripts/write_spec_hash.sh"
+
+pushd "$repo_root/paper" >/dev/null
+
+pdflatex -interaction=nonstopmode -halt-on-error main.tex
+bibtex main || true
+pdflatex -interaction=nonstopmode -halt-on-error main.tex
+pdflatex -interaction=nonstopmode -halt-on-error main.tex
+
+popd >/dev/null
+
+echo "Built paper/main.pdf"
