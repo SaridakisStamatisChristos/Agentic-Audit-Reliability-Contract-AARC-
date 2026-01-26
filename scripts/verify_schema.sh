@@ -1,4 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "placeholder schema verification"
+schema_path="spec/ARF_STATE_VECTOR.schema.v1_0_4.json"
+
+if [[ ! -f "$schema_path" ]]; then
+  echo "Schema not found: $schema_path" >&2
+  exit 1
+fi
+
+python - <<'PY'
+import json
+from pathlib import Path
+
+schema_path = Path("spec/ARF_STATE_VECTOR.schema.v1_0_4.json")
+data = json.loads(schema_path.read_text())
+if not isinstance(data, dict):
+    raise SystemExit("Schema root must be an object")
+if data.get("$schema") is None:
+    raise SystemExit("Schema missing $schema key")
+print(f"Schema sanity check passed: {schema_path}")
+PY

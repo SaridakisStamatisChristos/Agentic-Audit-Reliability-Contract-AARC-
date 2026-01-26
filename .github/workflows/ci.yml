@@ -2,9 +2,50 @@ name: CI
 
 on:
   push:
+  pull_request:
 
 jobs:
-  placeholder:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "placeholder"
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install zip tooling
+        run: sudo apt-get update && sudo apt-get install -y zip unzip
+
+      - name: Schema sanity
+        run: ./scripts/verify_schema.sh
+
+      - name: Conformance checks
+        run: ./scripts/conformance_checks.sh
+
+      - name: Generate spec hash
+        run: ./scripts/write_spec_hash.sh
+
+      - name: Build PDF (LaTeX)
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: paper
+          root_file: main.tex
+          latexmk_use_xelatex: false
+          docker_image: ghcr.io/xu-cheng/texlive-full:latest
+
+      - name: Make arXiv zip
+        run: ./scripts/make_arxiv_zip.sh
+
+      - name: Validate arXiv bundle structure
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/arf_arxiv
+          mkdir -p /tmp/arf_arxiv
+          unzip -q -o dist/ARF_v1_0_4_arxiv.zip -d /tmp/arf_arxiv
+          test -f /tmp/arf_arxiv/main.tex
+          test -f /tmp/arf_arxiv/figures/arf_lifecycle.pdf
+          test -f /tmp/arf_arxiv/figures/arf_architecture.pdf
+          test -f /tmp/arf_arxiv/spec/ARF_STATE_VECTOR.schema.v1_0_4.json
+          test -f /tmp/arf_arxiv/spec_hash.tex
