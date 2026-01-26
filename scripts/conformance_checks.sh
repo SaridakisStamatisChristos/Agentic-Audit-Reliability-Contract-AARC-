@@ -34,7 +34,7 @@ if [[ "$schema_path" != *v1_0_4* ]]; then
   exit 1
 fi
 
-if ! rg -n "\\\\input\\{spec_hash\\.tex\\}" "$paper_main" >/dev/null; then
+if ! grep -E "\\\\input\\{spec_hash\\.tex\\}" "$paper_main" >/dev/null; then
   echo "paper/main.tex does not import spec_hash.tex." >&2
   exit 1
 fi
