@@ -5,6 +5,11 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 "$repo_root/scripts/write_spec_hash.sh"
 
+if ! command -v pdflatex >/dev/null; then
+  echo "pdflatex missing; skipping PDF build."
+  exit 0
+fi
+
 pushd "$repo_root/paper" >/dev/null
 
 pdflatex -interaction=nonstopmode -halt-on-error main.tex
