@@ -1,102 +1,148 @@
 \documentclass{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{hyperref}
+
 \input{spec_hash}
-\title{Agentic Reliability Framework v1.0.4}
+
+\title{Agentic Reliability Framework (ARF) v1.0.4}
 \author{Agentic Reliability Framework Contributors}
-\date{2025}
+\date{2026}
+
 \begin{document}
 \maketitle
 
 \begin{abstract}
-The Agentic Reliability Framework (ARF) specifies a minimal runtime contract,
-change journal protocol, and patch ledger that together provide auditability
-for agentic systems. This paper summarizes the v1.0.4 release and highlights
-the interoperability and security requirements.
+The Agentic Reliability Framework (ARF) v1.0.4 specifies a machine-verifiable
+telemetry format (the ARF State Vector), a non-self-approving validation protocol
+(Actor--Critic--Judge), and a runtime enforcement boundary (Monitor + capability-gated Tool Gateway).
+Together, these artifacts provide auditability, traceability, and hard guardrails
+against role/objective drift. This paper summarizes the v1.0.4 release and its
+interoperability and security requirements.
 \end{abstract}
 
 \section{Introduction}
-Agentic systems require consistent telemetry, change tracking, and verification
-mechanisms to safely evolve. ARF defines three core artifacts: a runtime
-contract for event streams, an Agentic Change Journal (ACJ) protocol, and a
-patch ledger for applied fixes. These artifacts provide traceability from
-runtime observations to remediation.
+Agentic systems fail in predictable ways: missing or non-comparable logs, silent
+goal drift, tool calls that are not policy-scoped, and ``self-approval'' loops
+where the same actor effectively validates its own output.
+ARF addresses these failure modes with a small set of versioned, portable
+artifacts designed for implementation in Python or TypeScript runtimes.
 
-The compiled paper embeds a deterministic hash of the v1.0.4 specifications to
-ensure any spec edits produce a detectable change in the PDF. Spec hash:
+ARF v1.0.4 is shipped as a specification repository and a reproducible build.
+The compiled PDF embeds a deterministic hash of the v1.0.4 specifications so any
+spec edits are detectable in the document build output. Spec hash:
 \texttt{\specHash}.
 
 \section{System Overview}
-Figure~\ref{fig:architecture} summarizes how runtime telemetry, ACJ entries, and
-patch ledger updates connect to monitoring and governance workflows.
+ARF organizes an agent run into a sequence of committed events. Each event emits
+an \emph{ARF State Vector} entry that can be validated by a Judge, Monitor, or
+external auditor without private context.
+Figure~\ref{fig:architecture} shows the conceptual flow of telemetry,
+validation, and enforcement.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.9\linewidth]{figures/arf_architecture.pdf}
-  \caption{ARF telemetry and change-control flow.}
+  \includegraphics[width=0.92\linewidth]{figures/arf_architecture.pdf}
+  \caption{ARF run structure: state vectors provide auditability; ACJ provides
+  non-self-approval validation; Monitor + Tool Gateway enforce policy-scoped side effects.}
   \label{fig:architecture}
 \end{figure}
 
-\section{Runtime Contract}
-The runtime contract specifies task lifecycle events, state vector snapshots,
-and remediation records. State vectors must conform to the v1.0.4 schema and
-include inputs, outputs, tool usage, confidence, and policy references.
+\section{ARF State Vector (Audit Log Primitive)}
+The State Vector is the primary machine-readable log entry for ARF. Implementations
+must emit State Vectors that validate against the v1.0.4 schema.
+At minimum, a State Vector binds:
+\begin{itemize}
+  \item \textbf{Identity anchors}: agent id, root agent, parent id, role token.
+  \item \textbf{Intent anchors}: immutable objective/policy hashes and root anchors.
+  \item \textbf{Traceability}: run id, step id, sequence number, and continuity metadata.
+  \item \textbf{Inputs/assumptions}: digests and declared assumptions used for reasoning.
+  \item \textbf{Governed metrics}: confidence/uncertainty/evidence coverage used at decision time.
+  \item \textbf{Side-effects}: tool events (or capability usage) when in TM-B deployments.
+\end{itemize}
 
-\section{Agentic Change Journal}
-ACJ entries record material changes in behavior, configuration, or policy. Each
-entry references evidence from runtime telemetry and links to patch ledger
-records when changes are applied.
+The design goal is simple: a verifier can read a sequence of State Vectors and
+determine whether invariants were upheld without depending on an agent’s internal
+reasoning trace.
 
-\section{Patch Ledger}
-The patch ledger is an append-only log of applied patches, with each record
-linking back to the motivating ACJ entry. Integrity metadata is recommended to
-ensure auditability across the system lifecycle.
+\section{Actor--Critic--Judge (ACJ) Protocol (Non-Self-Approval)}
+ARF uses an Actor--Critic--Judge protocol to prevent self-approval.
+\begin{itemize}
+  \item The \textbf{Actor} generates a proposal and must not finalize approval.
+  \item The \textbf{Critic} evaluates the proposal using required attack vectors
+        (e.g., evidence gaps, contradiction, boundary violation, hallucination risk).
+  \item The \textbf{Judge} issues the only valid approval decision and records governed metrics.
+\end{itemize}
+
+In ARF-compliant systems, a proposal becomes ``approved'' only if the Judge (and,
+where configured, receipt verification) confirms that the Critic evaluation and
+decision chain are present and consistent with the run’s immutable anchors.
+
+\section{Runtime Contract and Enforcement Boundary}
+ARF is designed around an enforcement boundary:
+\begin{itemize}
+  \item A \textbf{Monitor} is authoritative for commit order, invariant checks,
+        override envelope enforcement, and kill-switch execution.
+  \item In TM-B deployments, a \textbf{Tool Gateway} mediates all tool calls via
+        capability tokens and logs TOOL\_EVENT entries as State Vectors.
+\end{itemize}
+
+This separation is essential: policy-scoped side effects are enforced outside the
+agent’s own text generation loop. If identity or intent invariants are violated
+mid-run, the Monitor revokes capabilities and terminates the run.
+
+\section{Patch Ledger (Evolution Record)}
+The patch ledger is an append-only record of protocol fixes and release closures.
+Each patch entry is intended to be linkable to motivating evidence (telemetry
+and/or validation findings) and supports operational governance:
+auditors can answer ``what changed'' and ``why'' across versions.
 
 \section{Formal Invariants and Properties}
-The ARF release specifies a small set of invariants and properties that must
-hold across implementations:
+ARF v1.0.4 requires the following invariants and properties across implementations:
 \begin{itemize}
-  \item \textbf{I1 (State Vector Completeness)}: every task lifecycle event
-  yields a state vector snapshot with required inputs, outputs, tool calls, and
-  policy references. \textit{Enforced by}: runtime contract validators and
-  schema checks.
-  \item \textbf{I2 (Traceability)}: every behavioral change has a corresponding
-  ACJ entry that references evidence and, if applicable, a patch ledger record.
-  \textit{Enforced by}: ACJ protocol requirements and patch ledger linkage.
-  \item \textbf{P1 (Immutable Audit Trail)}: once recorded, ACJ and patch ledger
-  entries are append-only and never overwritten. \textit{Enforced by}: ledger
-  append-only storage plus integrity metadata.
-  \item \textbf{P2 (Policy-Scoped Actions)}: tool calls and outputs are scoped to
-  active policy identifiers in the state vector. \textit{Enforced by}: runtime
-  contract fields with policy references.
-  \item \textbf{P3 (Evidence-Bound Remediation)}: patches must cite evidence from
-  runtime telemetry or ACJ records. \textit{Enforced by}: patch ledger evidence
-  references and review workflows.
-  \item \textbf{P4 (Conformance Gate)}: releases are valid only when schema
-  checks, paper build, and arXiv bundle packaging succeed. \textit{Enforced by}:
-  CI conformance checks and release scripts.
+  \item \textbf{I1 (Identity Invariance)}: role/identity anchors must not change
+        after GENESIS. \textit{Enforced by}: Monitor checks at commit and tool boundaries.
+  \item \textbf{I2 (Intent Invariance)}: objective/policy anchors (and root hashes)
+        must remain immutable for the run. \textit{Enforced by}: Monitor hash checks and kill-switch.
+  \item \textbf{P1 (State Vector Completeness)}: lifecycle steps emit schema-valid
+        State Vectors with traceability and inputs/assumptions. \textit{Enforced by}:
+        schema validation and runtime contract.
+  \item \textbf{P2 (Non-Self-Approval)}: Actor cannot unilaterally approve; approval
+        requires Critic evaluation and Judge decision. \textit{Enforced by}: ACJ protocol and
+        receipt verification (where configured).
+  \item \textbf{P3 (Policy-Scoped Side Effects)}: tool calls must be policy-scoped and,
+        in TM-B, capability-gated. \textit{Enforced by}: Tool Gateway + Monitor revocation.
+  \item \textbf{P4 (Conformance Gate)}: releases are valid only when schema checks,
+        paper build, and arXiv bundle packaging succeed. \textit{Enforced by}:
+        CI conformance checks and release scripts.
 \end{itemize}
 
 \section{Threat Model}
 \begin{table}[h]
   \centering
-  \begin{tabular}{p{0.28\linewidth} p{0.42\linewidth} p{0.22\linewidth}}
+  \begin{tabular}{p{0.28\linewidth} p{0.44\linewidth} p{0.20\linewidth}}
     \toprule
     Attack & Mitigation & Residual Risk \\
     \midrule
-    Tampering with telemetry streams &
-    Schema-validated state vectors, integrity metadata, and ACJ evidence
-    requirements & Low: requires breaking both telemetry and ledger \\
-    Drift between runtime behavior and recorded changes &
-    ACJ linkage to evidence and patch ledger references & Medium: requires
-    disciplined review workflows \\
+    Telemetry tampering / missing logs &
+    Append-only State Vectors; integrity metadata; Monitor-authoritative commit ordering &
+    Low--Medium (depends on storage trust) \\
+    Goal or role drift mid-run &
+    Immutable anchors (root objective/policy/role tokens); Monitor kill-switch &
+    Low \\
+    Self-approval loops &
+    ACJ separation of duties (Actor/Critic/Judge); receipt verification for approvals &
+    Low \\
     Unauthorized tool invocation &
-    Policy-scoped tool call fields and runtime contract validation &
-    Medium: depends on policy enforcement rigor \\
+    Policy-scoped tool events; capability-gated Tool Gateway (TM-B); Monitor revocation &
+    Low--Medium (depends on gateway isolation) \\
     Silent spec changes &
-    Embedded spec hash in the paper and versioned spec filenames &
-    Low: changes surface in builds \\
+    Versioned spec filenames; embedded spec hash in PDF builds &
+    Low \\
     \bottomrule
   \end{tabular}
   \caption{Threat model for ARF deployments.}
@@ -105,33 +151,33 @@ hold across implementations:
 \section{Conformance Test Plan}
 An implementation is ARF-compliant when the following checks pass:
 \begin{enumerate}
-  \item \textbf{Schema validation}: generated state vectors validate against
-  the v1.0.4 schema for representative task runs.
-  \item \textbf{Lifecycle coverage}: task start, tool invocation, output, and
-  remediation events are emitted and linked consistently.
-  \item \textbf{ACJ integrity}: each behavioral or policy change yields an ACJ
-  entry referencing evidence and (if applicable) a patch ledger record.
-  \item \textbf{Patch ledger integrity}: patch entries are append-only and point
-  back to the triggering ACJ entry.
-  \item \textbf{Release checks}: schema sanity, paper build, and arXiv bundle
-  packaging complete without errors.
+  \item \textbf{Schema validation}: emitted State Vectors validate against the v1.0.4 schema.
+  \item \textbf{Anchor immutability}: root objective/policy/identity anchors remain constant
+        after GENESIS; violations trigger kill-switch.
+  \item \textbf{ACJ validity}: proposals are evaluated by Critic and finalized only by Judge;
+        Actor cannot approve.
+  \item \textbf{Policy-scoped tooling}: tool usage is logged and policy-scoped; in TM-B, calls
+        require valid capability tokens.
+  \item \textbf{Release checks}: schema sanity, paper build, and arXiv packaging succeed.
 \end{enumerate}
 
 \section{Ablation Analysis}
-Removing ARF components produces measurable reliability regressions:
+Removing ARF components produces predictable reliability regressions:
 \begin{itemize}
-  \item \textbf{Without the monitor}: telemetry gaps eliminate evidence needed
-  for ACJ entries, undermining traceability and preventing repeatable audits.
-  \item \textbf{Without receipts (ACJ entries)}: behavioral changes lose causal
-  linkage, making it impossible to prove when or why updates occurred.
-  \item \textbf{Without the tool gateway}: tool usage becomes unscoped, which
-  increases the risk of policy violations and complicates post-incident reviews.
+  \item \textbf{Without the Monitor}: anchor immutability and kill-switch enforcement degrade,
+        increasing drift and tool misuse risk.
+  \item \textbf{Without ACJ}: proposals can self-validate, increasing false approvals and
+        reducing audit confidence.
+  \item \textbf{Without the Tool Gateway (TM-B)}: tool calls become harder to constrain and
+        attribute, weakening policy-scoped side-effect guarantees.
 \end{itemize}
 
 \section{Conclusion}
-ARF v1.0.4 provides a concise, interoperable approach to reliability and
-observability for agentic systems. Future work will expand adapter guidance and
-formal validation tooling.
+ARF v1.0.4 provides a concise, interoperable foundation for auditable agentic systems:
+machine-verifiable State Vectors, a non-self-approving validation protocol, and a hard
+enforcement boundary for identity/intent invariance and policy-scoped side effects.
+Future work will expand adapters and conformance tooling while preserving the minimal
+core protocol.
 
 \bibliographystyle{plain}
 \bibliography{arf}
