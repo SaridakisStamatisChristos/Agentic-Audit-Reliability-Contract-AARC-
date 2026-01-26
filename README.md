@@ -1,6 +1,8 @@
-# Agentic Reliability Framework
+# Agentic Audit & Reliability Contract (AARC) v1.0.4
 
-The Agentic Reliability Framework (ARF) defines a lightweight, auditable contract
+Former internal name: "ARF v1.0.4" (renamed to avoid naming collision).
+
+The Agentic Audit & Reliability Contract (AARC) defines a lightweight, auditable contract
 for agentic systems that need consistent runtime telemetry, repair tracking, and
 verifiable change logs. This repository contains the normative specifications,
 reference monitor implementations, and a companion paper for the v1.0.4

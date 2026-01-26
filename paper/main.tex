@@ -9,16 +9,16 @@
 
 \input{spec_hash}
 
-\title{Agentic Reliability Framework (ARF) v1.0.4}
-\author{Agentic Reliability Framework Contributors}
+\title{Agentic Audit \& Reliability Contract (AARC) v1.0.4}
+\author{AARC Contributors}
 \date{2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-The Agentic Reliability Framework (ARF) v1.0.4 specifies a machine-verifiable
-telemetry format (the ARF State Vector), a non-self-approving validation protocol
+The Agentic Audit \& Reliability Contract (AARC) v1.0.4 specifies a machine-verifiable
+telemetry format (the AARC State Vector), a non-self-approving validation protocol
 (Actor--Critic--Judge), and a runtime enforcement boundary (Monitor + capability-gated Tool Gateway).
 Together, these artifacts provide auditability, traceability, and hard guardrails
 against role/objective drift. This paper summarizes the v1.0.4 release and its
@@ -29,17 +29,17 @@ interoperability and security requirements.
 Agentic systems fail in predictable ways: missing or non-comparable logs, silent
 goal drift, tool calls that are not policy-scoped, and ``self-approval'' loops
 where the same actor effectively validates its own output.
-ARF addresses these failure modes with a small set of versioned, portable
+AARC addresses these failure modes with a small set of versioned, portable
 artifacts designed for implementation in Python or TypeScript runtimes.
 
-ARF v1.0.4 is shipped as a specification repository and a reproducible build.
+AARC v1.0.4 is shipped as a specification repository and a reproducible build.
 The compiled PDF embeds a deterministic hash of the v1.0.4 specifications so any
 spec edits are detectable in the document build output. Spec hash:
 \texttt{\specHash}.
 
 \section{System Overview}
-ARF organizes an agent run into a sequence of committed events. Each event emits
-an \emph{ARF State Vector} entry that can be validated by a Judge, Monitor, or
+AARC organizes an agent run into a sequence of committed events. Each event emits
+an \emph{AARC State Vector} entry that can be validated by a Judge, Monitor, or
 external auditor without private context.
 Figure~\ref{fig:architecture} shows the conceptual flow of telemetry,
 validation, and enforcement.
@@ -47,13 +47,13 @@ validation, and enforcement.
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.92\linewidth]{figures/arf_architecture.pdf}
-  \caption{ARF run structure: state vectors provide auditability; ACJ provides
+  \caption{AARC run structure: state vectors provide auditability; ACJ provides
   non-self-approval validation; Monitor + Tool Gateway enforce policy-scoped side effects.}
   \label{fig:architecture}
 \end{figure}
 
-\section{ARF State Vector (Audit Log Primitive)}
-The State Vector is the primary machine-readable log entry for ARF. Implementations
+\section{AARC State Vector (Audit Log Primitive)}
+The State Vector is the primary machine-readable log entry for AARC. Implementations
 must emit State Vectors that validate against the v1.0.4 schema.
 At minimum, a State Vector binds:
 \begin{itemize}
@@ -70,7 +70,7 @@ determine whether invariants were upheld without depending on an agent’s inter
 reasoning trace.
 
 \section{Actor--Critic--Judge (ACJ) Protocol (Non-Self-Approval)}
-ARF uses an Actor--Critic--Judge protocol to prevent self-approval.
+AARC uses an Actor--Critic--Judge protocol to prevent self-approval.
 \begin{itemize}
   \item The \textbf{Actor} generates a proposal and must not finalize approval.
   \item The \textbf{Critic} evaluates the proposal using required attack vectors
@@ -78,12 +78,12 @@ ARF uses an Actor--Critic--Judge protocol to prevent self-approval.
   \item The \textbf{Judge} issues the only valid approval decision and records governed metrics.
 \end{itemize}
 
-In ARF-compliant systems, a proposal becomes ``approved'' only if the Judge (and,
+In AARC-compliant systems, a proposal becomes ``approved'' only if the Judge (and,
 where configured, receipt verification) confirms that the Critic evaluation and
 decision chain are present and consistent with the run’s immutable anchors.
 
 \section{Runtime Contract and Enforcement Boundary}
-ARF is designed around an enforcement boundary:
+AARC is designed around an enforcement boundary:
 \begin{itemize}
   \item A \textbf{Monitor} is authoritative for commit order, invariant checks,
         override envelope enforcement, and kill-switch execution.
@@ -102,7 +102,7 @@ and/or validation findings) and supports operational governance:
 auditors can answer ``what changed'' and ``why'' across versions.
 
 \section{Formal Invariants and Properties}
-ARF v1.0.4 requires the following invariants and properties across implementations:
+AARC v1.0.4 requires the following invariants and properties across implementations:
 \begin{itemize}
   \item \textbf{I1 (Identity Invariance)}: role/identity anchors must not change
         after GENESIS. \textit{Enforced by}: Monitor checks at commit and tool boundaries.
@@ -145,11 +145,11 @@ ARF v1.0.4 requires the following invariants and properties across implementatio
     Low \\
     \bottomrule
   \end{tabular}
-  \caption{Threat model for ARF deployments.}
+  \caption{Threat model for AARC deployments.}
 \end{table}
 
 \section{Conformance Test Plan}
-An implementation is ARF-compliant when the following checks pass:
+An implementation is AARC-compliant when the following checks pass:
 \begin{enumerate}
   \item \textbf{Schema validation}: emitted State Vectors validate against the v1.0.4 schema.
   \item \textbf{Anchor immutability}: root objective/policy/identity anchors remain constant
@@ -162,7 +162,7 @@ An implementation is ARF-compliant when the following checks pass:
 \end{enumerate}
 
 \section{Ablation Analysis}
-Removing ARF components produces predictable reliability regressions:
+Removing AARC components produces predictable reliability regressions:
 \begin{itemize}
   \item \textbf{Without the Monitor}: anchor immutability and kill-switch enforcement degrade,
         increasing drift and tool misuse risk.
@@ -173,12 +173,12 @@ Removing ARF components produces predictable reliability regressions:
 \end{itemize}
 
 \section{Conclusion}
-ARF v1.0.4 provides a concise, interoperable foundation for auditable agentic systems:
+AARC v1.0.4 provides a concise, interoperable foundation for auditable agentic systems:
 machine-verifiable State Vectors, a non-self-approving validation protocol, and a hard
 enforcement boundary for identity/intent invariance and policy-scoped side effects.
 Future work will expand adapters and conformance tooling while preserving the minimal
 core protocol.
 
 \bibliographystyle{plain}
-\bibliography{arf}
+\bibliography{aarc}
 \end{document}
