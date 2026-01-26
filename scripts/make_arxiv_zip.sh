@@ -14,7 +14,7 @@ rm -rf "$staging_dir"
 mkdir -p "$staging_dir/figures"
 
 cp "$repo_root/paper/main.tex" "$staging_dir/"
-cp "$repo_root/paper/arf.bib" "$staging_dir/"
+cp "$repo_root/paper/aarc.bib" "$staging_dir/"
 cp "$repo_root/paper/spec_hash.tex" "$staging_dir/"
 cp -R "$repo_root/paper/spec" "$staging_dir/spec"
 cp "$repo_root/paper/figures/"*.pdf "$staging_dir/figures/"
