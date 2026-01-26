@@ -1,21 +1,24 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.org/arf/paper/ARF_STATE_VECTOR.schema.v1_0_4.json",
-  "title": "ARF State Vector v1.0.4 (Paper Appendix)",
+  "$id": "https://example.org/arf/spec/AARC_STATE_VECTOR.schema.v1_0_5.json",
+  "title": "ARF State Vector v1.0.5",
   "type": "object",
   "additionalProperties": false,
   "required": ["inputs", "outputs", "tools", "confidence", "policy"],
   "properties": {
     "inputs": {
       "type": "object",
+      "description": "Summarized inputs or intents for the task.",
       "additionalProperties": true
     },
     "outputs": {
       "type": "object",
+      "description": "Summarized outputs produced so far.",
       "additionalProperties": true
     },
     "tools": {
       "type": "array",
+      "description": "Tools invoked and their outcomes.",
       "items": {
         "type": "object",
         "additionalProperties": true
@@ -23,10 +26,12 @@
     },
     "confidence": {
       "type": "object",
+      "description": "Confidence or uncertainty indicators.",
       "additionalProperties": true
     },
     "policy": {
       "type": "object",
+      "description": "Policy or constraint references.",
       "additionalProperties": true
     }
   }

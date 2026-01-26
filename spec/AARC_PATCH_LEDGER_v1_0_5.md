@@ -1,4 +1,4 @@
-# ARF Patch Ledger v1.0.4
+# ARF Patch Ledger v1.0.5
 
 The patch ledger is an append-only log of fixes, mitigations, and code or
 configuration changes applied to an ARF-controlled system. It provides an audit

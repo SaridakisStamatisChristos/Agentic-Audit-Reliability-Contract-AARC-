@@ -1,4 +1,4 @@
-# ARF Runtime Contract v1.0.4
+# ARF Runtime Contract v1.0.5
 
 The runtime contract defines the minimal event stream required for reliable,
 observable agent execution. It establishes the event types, required fields,
@@ -29,7 +29,7 @@ Each runtime event MUST include:
 ## 3. State Vector Integration
 
 State vector snapshots MUST conform to
-`spec/ARF_STATE_VECTOR.schema.v1_0_4.json` and include:
+`spec/AARC_STATE_VECTOR.schema.v1_0_5.json` and include:
 
 - `inputs`: A summary of inputs or intents.
 - `outputs`: A summary of outputs produced so far.

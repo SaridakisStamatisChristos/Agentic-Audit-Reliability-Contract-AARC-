@@ -1,4 +1,4 @@
-# ARF Normative Requirements Index (Paper Appendix) v1.0.4
+# ARF Normative Requirements Index (Paper Appendix) v1.0.5
 
 This appendix summarizes the normative requirements for the Agentic Reliability
 Framework (ARF) described in the accompanying paper. The authoritative
@@ -11,4 +11,4 @@ requirements live in the `spec/` directory.
 - Patch ledgers MUST be append-only and reference ACJ entries.
 - Implementations MUST protect sensitive data and control access.
 
-For full details, see `spec/ARF_NORMATIVE_REQUIREMENTS_INDEX_v1_0_4.md`.
+For full details, see `spec/AARC_NORMATIVE_REQUIREMENTS_INDEX_v1_0_5.md`.

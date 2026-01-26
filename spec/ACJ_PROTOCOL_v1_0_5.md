@@ -1,4 +1,4 @@
-# Agentic Change Journal (ACJ) Protocol v1.0.4
+# Agentic Change Journal (ACJ) Protocol v1.0.5
 
 The Agentic Change Journal (ACJ) Protocol defines how agentic systems record
 material changes to behavior, configuration, policy, or runtime posture. The
