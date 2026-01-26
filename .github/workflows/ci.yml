@@ -2,9 +2,52 @@ name: CI
 
 on:
   push:
+    branches:
+      - "**"
+    tags:
+      - "v*"
 
 jobs:
-  placeholder:
+  conformance:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "placeholder"
+      - uses: actions/checkout@v4
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install matplotlib
+
+      - name: Install TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-bibtex-extra \
+            texlive-fonts-recommended \
+            zip
+
+      - name: Verify schema
+        run: ./scripts/verify_schema.sh
+
+      - name: Build paper PDF
+        run: ./scripts/build_pdf.sh
+
+      - name: Build arXiv bundle
+        run: ./scripts/make_arxiv_zip.sh
+
+      - name: Upload arXiv bundle
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ARF_v1_0_4_arxiv
+          path: dist/ARF_v1_0_4_arxiv.zip
+
+      - name: Upload paper PDF
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-main-pdf
+          path: paper/main.pdf
