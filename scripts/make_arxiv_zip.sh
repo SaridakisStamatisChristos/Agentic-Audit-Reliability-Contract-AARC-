@@ -6,7 +6,9 @@ dist_dir="$repo_root/dist"
 zip_path="$dist_dir/ARF_v1_0_4_arxiv.zip"
 staging_dir="$dist_dir/arxiv_staging"
 
-"$repo_root/scripts/write_spec_hash.sh"
+bash "$repo_root/scripts/write_spec_hash.sh"
+
+python "$repo_root/scripts/gen_figures.py"
 
 rm -rf "$staging_dir"
 mkdir -p "$staging_dir/figures"
