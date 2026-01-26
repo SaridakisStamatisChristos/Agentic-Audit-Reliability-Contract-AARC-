@@ -1,6 +1,6 @@
 # Agentic Audit & Reliability Contract (AARC) v1.0.5
 
-Former internal name: "ARF v1.0.5" (renamed to avoid naming collision).
+Former internal name: "ARF v1.0.4" (renamed to avoid naming collision).
 
 The Agentic Audit & Reliability Contract (AARC) defines a lightweight, auditable contract
 for agentic systems that need consistent runtime telemetry, repair tracking, and

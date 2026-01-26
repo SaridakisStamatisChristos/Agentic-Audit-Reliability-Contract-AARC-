@@ -21,8 +21,8 @@ def main() -> None:
     figures_dir = repo_root / "paper" / "figures"
     figures_dir.mkdir(parents=True, exist_ok=True)
 
-    make_simple_pdf(figures_dir / "arf_architecture.pdf", "ARF Architecture")
-    make_simple_pdf(figures_dir / "arf_lifecycle.pdf", "ARF Lifecycle")
+    make_simple_pdf(figures_dir / "aarc_architecture.pdf", "AARC Architecture")
+    make_simple_pdf(figures_dir / "aarc_lifecycle.pdf", "AARC Lifecycle")
 
 
 if __name__ == "__main__":

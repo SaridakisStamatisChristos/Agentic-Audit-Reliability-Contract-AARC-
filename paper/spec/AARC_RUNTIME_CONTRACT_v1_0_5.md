@@ -1,4 +1,4 @@
-# ARF Runtime Contract (Paper Appendix) v1.0.5
+# AARC Runtime Contract (Paper Appendix) v1.0.5
 
 The runtime contract defines a minimal event stream for agent execution:
 

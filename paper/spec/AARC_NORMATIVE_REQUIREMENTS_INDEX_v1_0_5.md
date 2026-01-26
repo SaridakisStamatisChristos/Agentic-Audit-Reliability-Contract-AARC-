@@ -1,7 +1,7 @@
-# ARF Normative Requirements Index (Paper Appendix) v1.0.5
+# AARC Normative Requirements Index (Paper Appendix) v1.0.5
 
 This appendix summarizes the normative requirements for the Agentic Reliability
-Framework (ARF) described in the accompanying paper. The authoritative
+Framework (AARC) described in the accompanying paper. The authoritative
 requirements live in the `spec/` directory.
 
 ## Summary

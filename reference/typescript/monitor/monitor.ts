@@ -1,4 +1,4 @@
-/* Minimal ARF reference monitor for TypeScript. */
+/* Minimal AARC reference monitor for TypeScript. */
 
 type Payload = Record<string, unknown>;
 

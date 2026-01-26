@@ -1,7 +1,7 @@
-# ARF Patch Ledger v1.0.5
+# AARC Patch Ledger v1.0.5
 
 The patch ledger is an append-only log of fixes, mitigations, and code or
-configuration changes applied to an ARF-controlled system. It provides an audit
+configuration changes applied to an AARC-controlled system. It provides an audit
 trail that links remediation actions to the evidence captured in runtime
 contract events and the Agentic Change Journal (ACJ).
 
