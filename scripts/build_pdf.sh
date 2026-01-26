@@ -5,6 +5,8 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 bash "$repo_root/scripts/write_spec_hash.sh"
 
+rm -f "$repo_root/paper/figures/"*.pdf
+
 python "$repo_root/scripts/gen_figures.py"
 
 if ! command -v pdflatex >/dev/null; then
