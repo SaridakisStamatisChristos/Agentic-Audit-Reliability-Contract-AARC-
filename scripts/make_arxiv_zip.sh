@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 dist_dir="$repo_root/dist"
-zip_path="$dist_dir/ARF_v1_0_4_arxiv.zip"
+zip_path="$dist_dir/AARC_v1_0_4_arxiv.zip"
 staging_dir="$dist_dir/arxiv_staging"
 
 bash "$repo_root/scripts/write_spec_hash.sh"
