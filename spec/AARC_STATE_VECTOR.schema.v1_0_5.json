@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.org/arf/spec/ARF_STATE_VECTOR.schema.v1_0_4.json",
-  "title": "ARF State Vector v1.0.4",
+  "$id": "https://example.org/aarc/spec/AARC_STATE_VECTOR.schema.v1_0_5.json",
+  "title": "AARC State Vector v1.0.5",
   "type": "object",
   "additionalProperties": false,
   "required": ["inputs", "outputs", "tools", "confidence", "policy"],

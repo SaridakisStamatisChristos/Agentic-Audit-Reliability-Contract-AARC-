@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-spec_glob="*v1_0_4*"
+spec_glob="*v1_0_5*"
 spec_dir="spec"
 output_path="paper/spec_hash.tex"
 

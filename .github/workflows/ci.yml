@@ -42,8 +42,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
-          name: AARC_v1_0_4_arxiv
-          path: dist/AARC_v1_0_4_arxiv.zip
+          name: AARC_v1_0_5_arxiv
+          path: dist/AARC_v1_0_5_arxiv.zip
 
       - name: Upload paper PDF
         if: startsWith(github.ref, 'refs/tags/')

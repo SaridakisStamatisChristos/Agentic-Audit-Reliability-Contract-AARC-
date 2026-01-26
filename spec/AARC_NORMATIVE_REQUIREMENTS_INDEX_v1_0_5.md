@@ -1,12 +1,12 @@
-# Agentic Reliability Framework
-## Normative Requirements Index v1.0.4
+# Agentic Audit & Reliability Contract
+## Normative Requirements Index v1.0.5
 
-This document enumerates the normative requirements that govern ARF-compliant
+This document enumerates the normative requirements that govern AARC-compliant
 systems. "MUST", "SHOULD", and "MAY" are interpreted as described in RFC 2119.
 
 ## 1. Conformance
 
-- **NR-1**: An ARF implementation **MUST** emit a runtime contract event stream
+- **NR-1**: An AARC implementation **MUST** emit a runtime contract event stream
   that captures task boundaries, state vectors, and error states.
 - **NR-2**: Implementations **MUST** produce an Agentic Change Journal (ACJ)
   entry for each material change in behavior, configuration, or policy.
@@ -24,7 +24,7 @@ systems. "MUST", "SHOULD", and "MAY" are interpreted as described in RFC 2119.
 - **NR-7**: Every runtime event **MUST** include a timestamp with timezone
   offset or UTC indicator.
 - **NR-8**: State vector snapshots **MUST** include at minimum the fields
-  defined by `spec/ARF_STATE_VECTOR.schema.v1_0_4.json`.
+  defined by `spec/AARC_STATE_VECTOR.schema.v1_0_5.json`.
 - **NR-9**: When a task fails, the runtime contract **MUST** record the failure
   classification and a remediation outcome.
 
@@ -59,4 +59,4 @@ systems. "MUST", "SHOULD", and "MAY" are interpreted as described in RFC 2119.
 - **NR-19**: Implementations **MUST** serialize logs in a machine-readable
   format (JSON or equivalent).
 - **NR-20**: Implementations **MAY** provide adapters for existing observability
-  stacks as long as the ARF-required fields are preserved.
+  stacks as long as the AARC-required fields are preserved.

@@ -1,7 +1,7 @@
 # Reference Implementations
 
-This directory contains minimal reference monitors for the Agentic Reliability
-Framework (ARF). The monitors demonstrate how to collect runtime telemetry,
+This directory contains minimal reference monitors for the Agentic Audit &
+Reliability Contract (AARC). The monitors demonstrate how to collect runtime telemetry,
 produce ACJ entries, and emit patch ledger records.
 
 ## Python

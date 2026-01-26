@@ -9,7 +9,7 @@
 
 \input{spec_hash}
 
-\title{Agentic Audit \& Reliability Contract (AARC) v1.0.4}
+\title{Agentic Audit \& Reliability Contract (AARC) v1.0.5}
 \author{AARC Contributors}
 \date{2026}
 
@@ -17,11 +17,11 @@
 \maketitle
 
 \begin{abstract}
-The Agentic Audit \& Reliability Contract (AARC) v1.0.4 specifies a machine-verifiable
+The Agentic Audit \& Reliability Contract (AARC) v1.0.5 specifies a machine-verifiable
 telemetry format (the AARC State Vector), a non-self-approving validation protocol
 (Actor--Critic--Judge), and a runtime enforcement boundary (Monitor + capability-gated Tool Gateway).
 Together, these artifacts provide auditability, traceability, and hard guardrails
-against role/objective drift. This paper summarizes the v1.0.4 release and its
+against role/objective drift. This paper summarizes the v1.0.5 release and its
 interoperability and security requirements.
 \end{abstract}
 
@@ -32,8 +32,8 @@ where the same actor effectively validates its own output.
 AARC addresses these failure modes with a small set of versioned, portable
 artifacts designed for implementation in Python or TypeScript runtimes.
 
-AARC v1.0.4 is shipped as a specification repository and a reproducible build.
-The compiled PDF embeds a deterministic hash of the v1.0.4 specifications so any
+AARC v1.0.5 is shipped as a specification repository and a reproducible build.
+The compiled PDF embeds a deterministic hash of the v1.0.5 specifications so any
 spec edits are detectable in the document build output. Spec hash:
 \texttt{\specHash}.
 
@@ -46,7 +46,7 @@ validation, and enforcement.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.92\linewidth]{figures/arf_architecture.pdf}
+  \includegraphics[width=0.92\linewidth]{figures/aarc_architecture.pdf}
   \caption{AARC run structure: state vectors provide auditability; ACJ provides
   non-self-approval validation; Monitor + Tool Gateway enforce policy-scoped side effects.}
   \label{fig:architecture}
@@ -54,7 +54,7 @@ validation, and enforcement.
 
 \section{AARC State Vector (Audit Log Primitive)}
 The State Vector is the primary machine-readable log entry for AARC. Implementations
-must emit State Vectors that validate against the v1.0.4 schema.
+must emit State Vectors that validate against the v1.0.5 schema.
 At minimum, a State Vector binds:
 \begin{itemize}
   \item \textbf{Identity anchors}: agent id, root agent, parent id, role token.
@@ -102,7 +102,7 @@ and/or validation findings) and supports operational governance:
 auditors can answer ``what changed'' and ``why'' across versions.
 
 \section{Formal Invariants and Properties}
-AARC v1.0.4 requires the following invariants and properties across implementations:
+AARC v1.0.5 requires the following invariants and properties across implementations:
 \begin{itemize}
   \item \textbf{I1 (Identity Invariance)}: role/identity anchors must not change
         after GENESIS. \textit{Enforced by}: Monitor checks at commit and tool boundaries.
@@ -151,7 +151,7 @@ AARC v1.0.4 requires the following invariants and properties across implementati
 \section{Conformance Test Plan}
 An implementation is AARC-compliant when the following checks pass:
 \begin{enumerate}
-  \item \textbf{Schema validation}: emitted State Vectors validate against the v1.0.4 schema.
+  \item \textbf{Schema validation}: emitted State Vectors validate against the v1.0.5 schema.
   \item \textbf{Anchor immutability}: root objective/policy/identity anchors remain constant
         after GENESIS; violations trigger kill-switch.
   \item \textbf{ACJ validity}: proposals are evaluated by Critic and finalized only by Judge;
@@ -173,7 +173,7 @@ Removing AARC components produces predictable reliability regressions:
 \end{itemize}
 
 \section{Conclusion}
-AARC v1.0.4 provides a concise, interoperable foundation for auditable agentic systems:
+AARC v1.0.5 provides a concise, interoperable foundation for auditable agentic systems:
 machine-verifiable State Vectors, a non-self-approving validation protocol, and a hard
 enforcement boundary for identity/intent invariance and policy-scoped side effects.
 Future work will expand adapters and conformance tooling while preserving the minimal

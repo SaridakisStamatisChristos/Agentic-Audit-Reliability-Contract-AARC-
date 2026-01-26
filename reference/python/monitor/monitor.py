@@ -1,4 +1,4 @@
-"""Minimal ARF reference monitor for Python."""
+"""Minimal AARC reference monitor for Python."""
 
 from __future__ import annotations
 

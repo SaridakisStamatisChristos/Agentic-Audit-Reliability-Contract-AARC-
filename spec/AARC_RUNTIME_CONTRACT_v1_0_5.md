@@ -1,12 +1,12 @@
-# ARF Runtime Contract v1.0.4
+# AARC Runtime Contract v1.0.5
 
 The runtime contract defines the minimal event stream required for reliable,
 observable agent execution. It establishes the event types, required fields,
-and lifecycle semantics for ARF-compliant systems.
+and lifecycle semantics for AARC-compliant systems.
 
 ## 1. Event Types
 
-ARF-compliant systems MUST emit the following event types:
+AARC-compliant systems MUST emit the following event types:
 
 - `task.start`: Signals the beginning of a task or session.
 - `task.heartbeat`: Periodic indicator that the task is still running.
@@ -29,7 +29,7 @@ Each runtime event MUST include:
 ## 3. State Vector Integration
 
 State vector snapshots MUST conform to
-`spec/ARF_STATE_VECTOR.schema.v1_0_4.json` and include:
+`spec/AARC_STATE_VECTOR.schema.v1_0_5.json` and include:
 
 - `inputs`: A summary of inputs or intents.
 - `outputs`: A summary of outputs produced so far.
