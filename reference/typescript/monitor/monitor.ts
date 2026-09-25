@@ -28,7 +28,7 @@ const TERMINAL_EVENTS = new Set(["task.stop", "task.fail"]);
 export class TraceVerificationError extends Error {}
 export class ToolAuthorizationError extends Error {}
 
-function canonicalJson(value: unknown): string {
+export function canonicalJson(value: unknown): string {
   const encoded = canonicalize(value);
   if (encoded === undefined) {
     throw new Error("value is not representable in RFC 8785 JCS");
