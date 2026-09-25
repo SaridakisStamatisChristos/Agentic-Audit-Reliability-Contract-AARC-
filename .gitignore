@@ -1,2 +1,11 @@
 dist/
+dist-ts/
+node_modules/
+__pycache__/
+.pytest_cache/
 paper/figures/*.pdf
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
