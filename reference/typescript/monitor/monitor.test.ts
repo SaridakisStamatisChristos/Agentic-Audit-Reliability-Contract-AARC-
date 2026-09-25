@@ -3,8 +3,16 @@ import assert from "node:assert/strict";
 import {
   Monitor,
   ToolAuthorizationError,
+  canonicalJson,
+  sha256Hex,
   verifyTrace,
 } from "./monitor";
+
+assert.equal(canonicalJson({ b: 1.0, a: "x" }), '{"a":"x","b":1}');
+assert.equal(
+  sha256Hex({ b: 1.0, a: "x" }),
+  "cdab067e9f3beb32d1252cfd63e492592fecbf591b0d08cadb24bb17f3864246",
+);
 
 const monitor = new Monitor(
   "agent-ts",
