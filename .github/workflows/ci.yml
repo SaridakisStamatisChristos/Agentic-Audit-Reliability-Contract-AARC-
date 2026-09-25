@@ -6,6 +6,14 @@ on:
       - "**"
     tags:
       - "v*"
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aarc-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   conformance:
@@ -13,10 +21,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Python deps
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Python conformance dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install matplotlib
+          python -m pip install -e ".[test,paper]"
+
+      - name: Install TypeScript conformance dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Verify normative schemas and positive fixture
+        run: ./scripts/verify_schema.sh
+
+      - name: Run Python conformance suite
+        run: pytest -q
+
+      - name: Run adversarial conformance benchmark
+        run: |
+          mkdir -p dist
+          python -m evaluation.run_conformance_benchmark | tee dist/conformance-results.json
+
+      - name: Run performance scaling benchmark
+        run: python -m evaluation.run_performance_benchmark | tee dist/performance-results.json
+
+      - name: Compile and test TypeScript reference implementation
+        run: npm run test:ts
 
       - name: Install TeX Live
         run: |
@@ -29,25 +67,24 @@ jobs:
             texlive-fonts-recommended \
             zip
 
-      - name: Verify schema
-        run: ./scripts/verify_schema.sh
-
-      - name: Build paper PDF
+      - name: Build publication PDF
         run: ./scripts/build_pdf.sh
 
       - name: Build arXiv bundle
         run: ./scripts/make_arxiv_zip.sh
 
-      - name: Upload arXiv bundle
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload conformance evidence
         uses: actions/upload-artifact@v4
         with:
-          name: AARC_v1_0_5_arxiv
-          path: dist/AARC_v1_0_5_arxiv.zip
+          name: aarc-v1.1.0-conformance
+          path: |
+            dist/conformance-results.json
+            dist/performance-results.json
 
-      - name: Upload paper PDF
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload publication artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: paper-main-pdf
-          path: paper/main.pdf
+          name: aarc-v1.1.0-publication
+          path: |
+            paper/main.pdf
+            dist/AARC_v1_1_0_arxiv.zip

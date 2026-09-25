@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SaridakisStamatisChristos/Agentic-Audit-Reliability-Contract-AARC-/blob/main/spec/AARC_RUNTIME_EVENT.schema.v1_1_0.json",
+  "title": "AARC Runtime Event v1.1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "timestamp",
+    "agent_id",
+    "task_id",
+    "run_id",
+    "sequence",
+    "anchors",
+    "prev_event_hash",
+    "event_hash",
+    "payload"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "minLength": 1 },
+    "event_type": {
+      "enum": [
+        "task.start",
+        "task.heartbeat",
+        "state.snapshot",
+        "approval.decided",
+        "tool.requested",
+        "tool.authorized",
+        "tool.denied",
+        "tool.executed",
+        "tool.failed",
+        "task.remediate",
+        "task.fail",
+        "task.stop"
+      ]
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "agent_id": { "type": "string", "minLength": 1 },
+    "task_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "anchors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role_hash", "objective_hash", "policy_hash"],
+      "properties": {
+        "role_hash": { "$ref": "#/$defs/sha256" },
+        "objective_hash": { "$ref": "#/$defs/sha256" },
+        "policy_hash": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "prev_event_hash": { "$ref": "#/$defs/sha256" },
+    "event_hash": { "$ref": "#/$defs/sha256" },
+    "payload": { "type": "object" }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}
