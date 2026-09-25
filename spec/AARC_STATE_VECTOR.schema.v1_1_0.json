@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SaridakisStamatisChristos/Agentic-Audit-Reliability-Contract-AARC-/blob/main/spec/AARC_STATE_VECTOR.schema.v1_1_0.json",
+  "title": "AARC State Vector v1.1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "identity",
+    "intent",
+    "trace",
+    "inputs",
+    "outputs",
+    "tools",
+    "confidence",
+    "policy",
+    "assumptions"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.1.0" },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agent_id", "root_agent_id", "role", "role_hash"],
+      "properties": {
+        "agent_id": { "type": "string", "minLength": 1 },
+        "root_agent_id": { "type": "string", "minLength": 1 },
+        "parent_agent_id": { "type": ["string", "null"] },
+        "role": { "type": "string", "minLength": 1 },
+        "role_hash": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["objective_hash", "policy_hash"],
+      "properties": {
+        "objective_hash": { "$ref": "#/$defs/sha256" },
+        "policy_hash": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "task_id", "step_id", "sequence", "parent_event_hash"],
+      "properties": {
+        "run_id": { "type": "string", "minLength": 1 },
+        "task_id": { "type": "string", "minLength": 1 },
+        "step_id": { "type": "string", "minLength": 1 },
+        "sequence": { "type": "integer", "minimum": 1 },
+        "parent_event_hash": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "inputs": { "type": "object" },
+    "outputs": { "type": "object" },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["tool_name", "status"],
+        "properties": {
+          "tool_name": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["requested", "authorized", "denied", "executed", "failed"] },
+          "request_event_id": { "type": "string" },
+          "permit_event_id": { "type": "string" },
+          "arguments_digest": { "$ref": "#/$defs/sha256" },
+          "result_digest": { "$ref": "#/$defs/sha256" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "properties": {
+        "value": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "uncertainty": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "evidence_coverage": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+      },
+      "additionalProperties": true
+    },
+    "policy": {
+      "type": "object",
+      "required": ["policy_id"],
+      "properties": {
+        "policy_id": { "type": "string", "minLength": 1 },
+        "constraints": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}
