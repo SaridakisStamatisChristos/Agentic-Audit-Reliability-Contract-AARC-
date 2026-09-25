@@ -10,8 +10,9 @@ from __future__ import annotations
 
 import copy
 import hashlib
-import json
 import sys
+
+import rfc8785
 import uuid
 from datetime import datetime, timezone
 from dataclasses import dataclass
@@ -32,13 +33,16 @@ class ToolAuthorizationError(PermissionError):
 
 
 def canonical_json(value: Any) -> str:
-    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    """RFC 8785 JSON Canonicalization Scheme (JCS)."""
+    return rfc8785.dumps(value).decode("utf-8")
 
 
 def sha256_hex(value: Any) -> str:
-    if not isinstance(value, str):
-        value = canonical_json(value)
-    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+    if isinstance(value, str):
+        material = value.encode("utf-8")
+    else:
+        material = rfc8785.dumps(value)
+    return hashlib.sha256(material).hexdigest()
 
 
 def compute_event_hash(event: Mapping[str, Any]) -> str:
