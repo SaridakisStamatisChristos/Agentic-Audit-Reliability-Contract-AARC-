@@ -1,37 +1,74 @@
-# Agentic Audit & Reliability Contract (AARC) v1.0.5
+# Agentic Audit & Reliability Contract (AARC) v1.1.0
 
-Former internal name: "ARF v1.0.5" (renamed to avoid naming collision).
+AARC is a machine-verifiable execution contract for tool-using AI agents. It standardizes the observable evidence needed to verify runtime ordering, immutable intent anchors, tool authorization, separated approval identities, and change provenance without depending on hidden chain-of-thought.
 
-The Agentic Audit & Reliability Contract (AARC) defines a lightweight, auditable contract
-for agentic systems that need consistent runtime telemetry, repair tracking, and
-verifiable change logs. This repository contains the normative specifications,
-reference monitor implementations, and a companion paper for the v1.0.5
-specification series.
+This branch contains the **v1.1.0 publication candidate** and companion paper:
 
-## What is included
+> **AARC: A Machine-Verifiable Audit and Reliability Contract for Tool-Using AI Agents**
 
-- **Specs**: Normative requirements, runtime contract, patch ledger, and ACJ
-  protocol definitions. See the `spec/` directory.
-- **Reference implementations**: Minimal monitors in Python and TypeScript under
-  `reference/`.
-- **Paper**: A short overview of the framework with citations in `paper/`.
+## What v1.1.0 adds
 
-## Versioning
-
-All documents in this repository are aligned to **v1.0.5**. Backwards-incompatible
-changes must increment the major or minor spec version.
-Changes to `spec/*v1_0_5*` require bumping the version and adding a changelog
-entry.
+- **Explicit wire schemas** for runtime events and State Vector snapshots.
+- **RFC 8785 JCS + SHA-256** event commitments for cross-language deterministic hashing.
+- **Immutable role/objective/policy anchors** checked on every event.
+- **Fail-closed Tool Gateway semantics** with request → authorize/deny → execute permit binding.
+- **Separated Decision Validation (SDV)** for Actor–Critic–Judge receipts without colliding with the existing **ACJ = Agentic Change Journal** acronym.
+- **Executable Python and TypeScript reference monitors**.
+- **Adversarial conformance tests** including rehashed semantic forgeries.
+- **Cross-language canonicalization vectors**.
+- **Scaling benchmark** for commit and verification overhead.
+- **Fail-closed publication CI** for schemas, tests, TypeScript, BibTeX, PDF build, spec hashing, and arXiv packaging.
 
 ## Repository layout
 
-```
-./spec/                      Normative specifications
-./reference/                 Reference monitor implementations
-./paper/                     Companion paper
+```text
+spec/                         Normative versioned AARC contracts and schemas
+reference/python/             Executable Python monitor + verifier
+reference/typescript/         Executable TypeScript monitor + verifier
+evaluation/                   Fault-injection and scaling benchmarks
+tests/                        Python conformance tests
+paper/                        Publication source and bibliography
+scripts/                      Reproducible build and packaging utilities
+.github/workflows/ci.yml      Release/conformance gate
 ```
 
-## Contributing
+## Conformance quick start
 
-When updating the specification, ensure the normative requirements index is
-updated and any reference implementation changes are reflected in the paper.
+Python:
+
+```bash
+python -m pip install "jsonschema>=4.23,<5" "pytest>=8,<9" "rfc8785==0.1.4"
+./scripts/verify_schema.sh
+pytest -q
+python evaluation/run_conformance_benchmark.py
+python evaluation/run_performance_benchmark.py
+```
+
+TypeScript:
+
+```bash
+npm install --ignore-scripts --no-audit --no-fund
+npm run test:ts
+```
+
+Publication build:
+
+```bash
+python -m pip install matplotlib
+./scripts/build_pdf.sh
+./scripts/make_arxiv_zip.sh
+```
+
+## Scope
+
+AARC conformance means the externally observable runtime trace satisfies the specified structural and semantic invariants. It does **not** by itself prove factual correctness, policy quality, signer authenticity, or general agent safety. Production deployments that require provenance authenticity should combine the AARC hash chain with authenticated signatures, protected checkpoints, or a transparency mechanism.
+
+## Versioning
+
+v1.1.0 is a semantic upgrade from v1.0.5. Existing v1.0.5 files remain in the repository as historical artifacts. New incompatible semantics must use a new specification version rather than silently changing the meaning of an existing version.
+
+The active version is declared in `SPEC_VERSION`. Publication builds compute a deterministic hash over the active normative spec set and embed that hash in the PDF.
+
+## Historical name
+
+The project was previously referred to internally as **ARF**. It was renamed to **AARC** to avoid naming collision.
