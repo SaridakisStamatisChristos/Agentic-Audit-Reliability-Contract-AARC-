@@ -15,6 +15,8 @@ from reference.python.monitor.monitor import (
     Monitor,
     ToolAuthorizationError,
     TraceVerificationError,
+    canonical_json,
+    sha256_hex,
     verify_trace,
 )
 
@@ -108,3 +110,9 @@ def test_positive_approval_rejects_self_approval() -> None:
             decision="approved",
             evidence_refs=["fixture://evidence"],
         )
+
+
+def test_rfc8785_cross_language_vector() -> None:
+    value = {"b": 1.0, "a": "x"}
+    assert canonical_json(value) == '{"a":"x","b":1}'
+    assert sha256_hex(value) == "cdab067e9f3beb32d1252cfd63e492592fecbf591b0d08cadb24bb17f3864246"
