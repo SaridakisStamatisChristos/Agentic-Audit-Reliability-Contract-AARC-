@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aarc-reference"
+version = "1.1.0"
+description = "Executable reference conformance tooling for the Agentic Audit & Reliability Contract"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "Stamatis-Christos Saridakis" }
+]
+dependencies = [
+  "rfc8785==0.1.4"
+]
+
+[project.optional-dependencies]
+test = [
+  "jsonschema>=4.23,<5",
+  "pytest>=8,<9"
+]
+paper = [
+  "matplotlib>=3.9,<4"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["reference*", "evaluation*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
