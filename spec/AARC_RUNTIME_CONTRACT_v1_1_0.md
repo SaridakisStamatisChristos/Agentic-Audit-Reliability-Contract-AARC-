@@ -14,7 +14,7 @@ Every event MUST include `prev_event_hash` and `event_hash`.
 
 - The first event MUST use 64 zeroes for `prev_event_hash`.
 - For event (e_i), `prev_event_hash` MUST equal the committed `event_hash` of (e_{i-1}).
-- `event_hash` MUST be SHA-256 over deterministic canonical JSON of the event with the `event_hash` field omitted.
+- `event_hash` MUST be SHA-256 over the RFC 8785 JSON Canonicalization Scheme (JCS) encoding of the event with the `event_hash` field omitted. Values outside the I-JSON/JCS domain MUST be rejected before commit.
 
 A hash chain detects accidental corruption and post-commit mutation relative to a trusted checkpoint. It does **not** by itself provide signer authenticity. Deployments that require non-repudiation SHOULD externally sign or transparency-log checkpoints.
 
