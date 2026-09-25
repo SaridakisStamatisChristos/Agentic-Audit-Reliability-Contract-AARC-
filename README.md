@@ -37,11 +37,11 @@ scripts/                      Reproducible build and packaging utilities
 Python:
 
 ```bash
-python -m pip install "jsonschema>=4.23,<5" "pytest>=8,<9" "rfc8785==0.1.4"
+python -m pip install -e ".[test,paper]"
 ./scripts/verify_schema.sh
 pytest -q
-python evaluation/run_conformance_benchmark.py
-python evaluation/run_performance_benchmark.py
+python -m evaluation.run_conformance_benchmark
+python -m evaluation.run_performance_benchmark
 ```
 
 TypeScript:
