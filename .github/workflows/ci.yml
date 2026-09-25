@@ -34,7 +34,7 @@ jobs:
       - name: Install Python conformance dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "jsonschema>=4.23,<5" "pytest>=8,<9" "matplotlib>=3.9,<4" "rfc8785==0.1.4"
+          python -m pip install -e ".[test,paper]"
 
       - name: Install TypeScript conformance dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
@@ -48,10 +48,10 @@ jobs:
       - name: Run adversarial conformance benchmark
         run: |
           mkdir -p dist
-          python evaluation/run_conformance_benchmark.py | tee dist/conformance-results.json
+          python -m evaluation.run_conformance_benchmark | tee dist/conformance-results.json
 
       - name: Run performance scaling benchmark
-        run: python evaluation/run_performance_benchmark.py | tee dist/performance-results.json
+        run: python -m evaluation.run_performance_benchmark | tee dist/performance-results.json
 
       - name: Compile and test TypeScript reference implementation
         run: npm run test:ts
