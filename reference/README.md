@@ -1,28 +1,36 @@
-# Reference Implementations
+# AARC Reference Implementations
 
-This directory contains minimal reference monitors for the Agentic Audit &
-Reliability Contract (AARC). The monitors demonstrate how to collect runtime telemetry,
-produce ACJ entries, and emit patch ledger records.
+The Python and TypeScript implementations in this directory are executable reference monitors for **AARC v1.1.0**. They are intended to demonstrate the normative wire semantics and verifier behavior, not to prescribe a production policy engine.
+
+## Implemented guarantees
+
+Both implementations cover:
+
+- RFC 8785 canonical event serialization and SHA-256 commitments;
+- contiguous event sequencing and predecessor-hash linkage;
+- immutable role/objective/policy anchors;
+- State Vector snapshots;
+- fail-closed tool authorization with permit-bound execution;
+- Actor–Critic–Judge separated approval receipts;
+- terminal lifecycle enforcement; and
+- offline trace verification.
 
 ## Python
 
 Location: `reference/python/monitor/monitor.py`
 
-The Python monitor provides a small in-process event recorder. It tracks
-state-vector snapshots, task boundaries, and recovery actions in a JSON log.
+The Python implementation is the primary executable conformance reference and is exercised by `tests/test_aarc_v1_1.py` plus the fault-injection and performance benchmarks under `evaluation/`.
 
 ## TypeScript
 
 Location: `reference/typescript/monitor/monitor.ts`
 
-The TypeScript monitor mirrors the Python behavior with a simple event stream
-that can be piped to a logging backend.
+The TypeScript implementation mirrors the observable contract and includes strict compilation plus conformance smoke tests.
 
-## Using the reference monitors
+## Canonicalization
 
-Both reference monitors are intentionally small and intended for adaptation.
-When integrating into production systems, ensure that:
+Do not replace RFC 8785 JCS with a language-default JSON serializer. Equivalent JSON numbers can serialize differently across runtimes and therefore produce incompatible hashes. The repository includes a cross-language vector specifically to prevent this regression.
 
-- State vector snapshots are taken at the entry and exit of each task.
-- ACJ events include deterministic identifiers and timestamps.
-- Patch ledger entries are signed or otherwise protected against tampering.
+## Production integration
+
+A production deployment should treat the monitor and Tool Gateway as trusted enforcement components. Replace the demonstration allow-set with the deployment's policy decision point, and add authenticated checkpoints or signatures when provenance authenticity is required.
