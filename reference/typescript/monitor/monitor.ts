@@ -1,6 +1,7 @@
 /* AARC v1.1.0 executable reference monitor for TypeScript. */
 
 import { createHash, randomUUID } from "node:crypto";
+import canonicalize from "canonicalize";
 
 type JsonObject = Record<string, unknown>;
 type EventRecord = {
@@ -28,21 +29,11 @@ export class TraceVerificationError extends Error {}
 export class ToolAuthorizationError extends Error {}
 
 function canonicalJson(value: unknown): string {
-  if (value === null || typeof value !== "object") {
-    return JSON.stringify(value);
+  const encoded = canonicalize(value);
+  if (encoded === undefined) {
+    throw new Error("value is not representable in RFC 8785 JCS");
   }
-  if (Array.isArray(value)) {
-    return "[" + value.map(canonicalJson).join(",") + "]";
-  }
-  const record = value as Record<string, unknown>;
-  return (
-    "{" +
-    Object.keys(record)
-      .sort()
-      .map((key) => JSON.stringify(key) + ":" + canonicalJson(record[key]))
-      .join(",") +
-    "}"
-  );
+  return encoded;
 }
 
 export function sha256Hex(value: unknown): string {
