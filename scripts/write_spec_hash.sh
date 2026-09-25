@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 # shellcheck disable=SC1091
 source "$repo_root/SPEC_VERSION"
 
-version_slug="\${AARC_VERSION//./_}"
-spec_glob="*v\${version_slug}*"
+version_slug="${AARC_VERSION//./_}"
+spec_glob="*v${version_slug}*"
 spec_dir="spec"
 output_path="paper/spec_hash.tex"
 
@@ -21,13 +21,13 @@ mapfile -d '' spec_files < <(
   find "$spec_dir" -maxdepth 1 -type f -name "$spec_glob" -print0 | sort -z
 )
 
-if [[ \${#spec_files[@]} -eq 0 ]]; then
+if [[ ${#spec_files[@]} -eq 0 ]]; then
   echo "No spec files found matching $spec_glob in $spec_dir" >&2
   exit 1
 fi
 
 spec_hash="$(
-  printf '%s\0' "\${spec_files[@]}" \
+  printf '%s\0' "${spec_files[@]}" \
     | xargs -0 sha256sum \
     | sha256sum \
     | awk '{print $1}'
