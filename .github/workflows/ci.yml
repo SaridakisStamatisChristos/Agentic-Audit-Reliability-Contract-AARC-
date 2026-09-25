@@ -50,6 +50,9 @@ jobs:
           mkdir -p dist
           python evaluation/run_conformance_benchmark.py | tee dist/conformance-results.json
 
+      - name: Run performance scaling benchmark
+        run: python evaluation/run_performance_benchmark.py | tee dist/performance-results.json
+
       - name: Compile and test TypeScript reference implementation
         run: npm run test:ts
 
@@ -74,7 +77,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aarc-v1.1.0-conformance
-          path: dist/conformance-results.json
+          path: |
+            dist/conformance-results.json
+            dist/performance-results.json
 
       - name: Upload publication artifacts
         uses: actions/upload-artifact@v4
