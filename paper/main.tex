@@ -3,182 +3,619 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{microtype}
+\usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{xurl}
 \usepackage{hyperref}
 
 \input{spec_hash}
 
-\title{Agentic Audit \& Reliability Contract (AARC) v1.0.5}
-\author{AARC Contributors}
+\title{AARC: A Machine-Verifiable Audit and Reliability Contract for Tool-Using AI Agents}
+\author{Stamatis-Christos Saridakis}
 \date{2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-The Agentic Audit \& Reliability Contract (AARC) v1.0.5 specifies a machine-verifiable
-telemetry format (the AARC State Vector), a non-self-approving validation protocol
-(Actor--Critic--Judge), and a runtime enforcement boundary (Monitor + capability-gated Tool Gateway).
-Together, these artifacts provide auditability, traceability, and hard guardrails
-against role/objective drift. This paper summarizes the v1.0.5 release and its
-interoperability and security requirements.
+Tool-using AI agents increasingly execute long-horizon workflows whose correctness
+depends not only on model outputs but also on authorization, execution order,
+policy state, and the integrity of the resulting evidence. Existing agent
+benchmarks expose substantial inconsistency and security failures, while recent
+runtime-enforcement systems focus on policy languages, action validation, or
+predictive risk control. This paper addresses a complementary systems problem:
+\emph{how can heterogeneous agent runtimes emit a portable execution record that
+can be independently checked for a defined set of reliability invariants?}
+
+We introduce the Agentic Audit \& Reliability Contract (AARC), a model- and
+policy-engine-independent runtime contract for externally observable agent
+execution. AARC v\specVersion{} defines machine-verifiable runtime-event and
+state-vector schemas; immutable role, objective, and policy anchors; an
+RFC~8785 canonical hash chain; fail-closed tool authorization receipts; separated
+Actor--Critic--Judge decision validation; and append-only change provenance.
+The contract deliberately excludes hidden chain-of-thought and does not equate
+trace conformance with semantic correctness.
+
+The accompanying artifact provides executable Python and TypeScript reference
+monitors, JSON Schema validation, cross-language canonicalization vectors,
+adversarial fault injection, and a release pipeline that fails closed if
+conformance, bibliography, paper, or packaging checks fail. The deterministic
+conformance suite accepts the clean reference trace and rejects all 11 injected
+structural and semantic violations, including attacks whose hash chains are
+recomputed after mutation. These results establish enforcement of the stated
+contract invariants---not general agent safety---and provide a reproducible
+foundation for integrating stronger policy engines and agent benchmarks.
 \end{abstract}
 
 \section{Introduction}
-Agentic systems fail in predictable ways: missing or non-comparable logs, silent
-goal drift, tool calls that are not policy-scoped, and ``self-approval'' loops
-where the same actor effectively validates its own output.
-AARC addresses these failure modes with a small set of versioned, portable
-artifacts designed for implementation in Python or TypeScript runtimes.
 
-AARC v1.0.5 is shipped as a specification repository and a reproducible build.
-The compiled PDF embeds a deterministic hash of the v1.0.5 specifications so any
-spec edits are detectable in the document build output. Spec hash:
+Language-model agents have moved from text generation toward persistent systems
+that call APIs, modify external state, communicate with users, and coordinate
+multi-step workflows. This shift changes the reliability problem. A successful
+final answer is no longer sufficient evidence that the execution was safe,
+authorized, reproducible, or even internally consistent. Reliability evaluations
+have therefore begun to emphasize consistency, robustness, predictability, and
+safety rather than a single task-success score
+\cite{rabanser2026reliability}. Interactive benchmarks such as
+$\tau$-bench and $\tau^2$-Bench expose repeated-run inconsistency and policy
+violations in realistic tool-use settings \cite{yao2024taubench,barres2025tau2},
+while AgentDojo, Agent Security Bench, and DUMA-Bench demonstrate that tool-using
+agents remain vulnerable to prompt injection, memory poisoning, and
+interaction-dependent attacks
+\cite{debenedetti2024agentdojo,zhang2025asb,aleksandrov2026duma}.
+
+A second line of work moves enforcement outside the language model.
+AgentSpec defines customizable runtime rules; Pro2Guard adds proactive
+probabilistic risk estimation; VIGIL checks temporal and value-flow policies over
+finite execution traces; and ActGov validates proposed tool actions against
+task-scoped authorization and security policies
+\cite{wang2026agentspec,wang2025pro2guard,li2026vigil,zhang2026actgov}.
+These systems establish that runtime mediation is an important safety boundary.
+They do not, however, eliminate a separate interoperability problem: different
+agent stacks still encode identity, intent, authorization, state transitions,
+approval evidence, remediation, and audit history in incompatible ways.
+
+AARC targets this missing layer. Its purpose is not to replace a policy language,
+an agent benchmark, a model evaluator, or a security monitor. It specifies a
+small external contract that those systems can emit and verify. The central
+design principle is that claims about an agent run should be grounded in
+machine-checkable evidence that survives implementation boundaries.
+
+This paper makes five contributions:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{A portable runtime contract.} We define versioned JSON schemas
+  for runtime events and state snapshots, including explicit identity, intent,
+  trace, tool, uncertainty, policy, assumption, and evidence fields.
+  \item \textbf{Machine-checkable safety invariants.} We formalize event-order
+  integrity, immutable anchors, permit-bound tool execution, separated approval
+  identities, and terminal lifecycle semantics.
+  \item \textbf{Cross-runtime cryptographic determinism.} Event hashing uses
+  RFC~8785 JSON Canonicalization Scheme (JCS) \cite{rfc8785}, avoiding
+  language-dependent JSON serialization in cryptographic commitments.
+  \item \textbf{Executable reference enforcement.} Python and TypeScript
+  monitors implement the same observable contract, including fail-closed tool
+  authorization and offline verification.
+  \item \textbf{Adversarial conformance evidence.} The repository contains a
+  deterministic suite that attacks both byte-level integrity and higher-level
+  semantics, including rehashed forgeries, and makes the results a release gate.
+\end{enumerate}
+
+AARC uses the normative terms MUST, SHOULD, and MAY according to BCP~14
+\cite{rfc2119,rfc8174}. The paper describes artifact version
+v\specVersion{}. The deterministic hash of the normative v\specVersion{}
+specification set used by the build is
 \texttt{\specHash}.
 
-\section{System Overview}
-AARC organizes an agent run into a sequence of committed events. Each event emits
-an \emph{AARC State Vector} entry that can be validated by a Judge, Monitor, or
-external auditor without private context.
-Figure~\ref{fig:architecture} shows the conceptual flow of telemetry,
-validation, and enforcement.
+\section{Problem Statement and Scope}
 
-\begin{figure}[h]
+\subsection{Execution reliability as an evidence problem}
+
+Consider a tool-using agent that produces a correct user-visible answer after
+several API calls. The final answer does not by itself establish that:
+(i) the same task policy remained active throughout the run;
+(ii) each side effect was authorized before execution;
+(iii) the recorded sequence was not reordered or altered;
+(iv) an approval was produced by a distinct reviewer rather than self-approved;
+or (v) the log contains enough information for an external auditor to reconstruct
+the decision boundary.
+
+AARC treats these questions as properties of the \emph{execution envelope}.
+The model may remain stochastic and opaque; the envelope is deterministic and
+verifiable.
+
+\subsection{What AARC does not claim}
+
+AARC conformance does not prove that a model's factual statements are true,
+that a policy is ethically correct, that a tool itself is uncompromised, or that
+a compliant run will complete its task successfully. A hash chain without a
+trusted checkpoint or signature does not prove who authored the history.
+Likewise, distinct logical Actor, Critic, and Judge identifiers do not guarantee
+organizational independence if a single compromised principal controls all
+three identities.
+
+These exclusions are intentional. Overstating such guarantees would convert an
+audit contract into a security claim it cannot support.
+
+\section{Related Work}
+
+\subsection{Agent reliability and evaluation}
+
+$\tau$-bench introduced repeated-trial reliability through the pass$^k$ metric
+for tool-agent-user interaction \cite{yao2024taubench}; $\tau^2$-Bench extended
+evaluation to dual-control interaction \cite{barres2025tau2}. More broadly,
+Rabanser et al.\ argue that aggregate success rates hide operational differences
+across consistency, robustness, predictability, and safety
+\cite{rabanser2026reliability}. Gao and Zhou further show that benchmark scores
+can be weakly supported when outcome checks do not retain sufficient execution
+evidence \cite{gao2026evidence}. AARC is aligned with this evidence-oriented
+view: it does not define task success, but it gives evaluators a standard
+execution record against which additional outcome evidence can be attached.
+
+Security benchmarks stress different parts of the agent stack. AgentDojo
+evaluates prompt injection in agents that act over untrusted tool data
+\cite{debenedetti2024agentdojo}; Agent Security Bench covers attacks across
+prompts, tools, and memory \cite{zhang2025asb}; DUMA-Bench studies security under
+interactive dual control \cite{aleksandrov2026duma}. AARC can be used around
+such benchmarks to standardize the provenance and authorization evidence
+generated by a run, but it is not itself an attack benchmark.
+
+\subsection{Runtime enforcement}
+
+AgentSpec shows that structured runtime rules can prevent unsafe actions with
+low enforcement overhead \cite{wang2026agentspec}. Pro2Guard adds predictive
+intervention using probabilistic model checking \cite{wang2025pro2guard}.
+VIGIL translates behavioral requirements into trace-aware symbolic constraints
+for runtime checking \cite{li2026vigil}. ActGov performs policy-constrained
+validation of proposed actions and verifies policy evolution with SMT-based
+counterexample checking \cite{zhang2026actgov}. SABER focuses attention on
+small state-mutating actions whose local errors can have large downstream
+consequences \cite{cuadron2026saber}.
+
+AARC is intentionally orthogonal to these policy mechanisms. It standardizes
+the evidence that an authorization decision occurred, what request it bound,
+which policy anchor governed it, and whether later execution matched that
+permit. An AARC Tool Gateway may therefore delegate policy evaluation to
+AgentSpec, VIGIL, ActGov, a capability system, an ABAC/RBAC engine, or a
+deployment-specific decision point.
+
+\section{Design Goals}
+
+AARC v\specVersion{} follows six goals.
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{External verifiability.} Conformance must be decidable without
+  access to hidden chain-of-thought.
+  \item \textbf{Fail-closed side effects.} A tool request without a valid
+  authorization decision must not become a conforming execution.
+  \item \textbf{Stable intent anchors.} Role, objective, and policy identity
+  must be immutable within a run.
+  \item \textbf{Cross-language determinism.} Cryptographic event commitments
+  must not depend on a language's default JSON serializer.
+  \item \textbf{Policy-engine independence.} The evidence contract should not
+  prescribe a particular authorization language.
+  \item \textbf{Versioned evolution.} Breaking semantic changes require a new
+  specification version; change history must be auditable rather than silently
+  rewritten.
+\end{enumerate}
+
+Figure~\ref{fig:architecture} shows the architecture.
+
+\begin{figure}[t]
   \centering
-  \includegraphics[width=0.92\linewidth]{figures/aarc_architecture.pdf}
-  \caption{AARC run structure: state vectors provide auditability; ACJ provides
-  non-self-approval validation; Monitor + Tool Gateway enforce policy-scoped side effects.}
+  \includegraphics[width=\linewidth]{figures/aarc_architecture.pdf}
+  \caption{AARC places a verifiable execution contract around the model. The
+  model proposes; external runtime components remain authoritative for approval,
+  side effects, commit order, and verification.}
   \label{fig:architecture}
 \end{figure}
 
-\section{AARC State Vector (Audit Log Primitive)}
-The State Vector is the primary machine-readable log entry for AARC. Implementations
-must emit State Vectors that validate against the v1.0.5 schema.
-At minimum, a State Vector binds:
-\begin{itemize}
-  \item \textbf{Identity anchors}: agent id, root agent, parent id, role token.
-  \item \textbf{Intent anchors}: immutable objective/policy hashes and root anchors.
-  \item \textbf{Traceability}: run id, step id, sequence number, and continuity metadata.
-  \item \textbf{Inputs/assumptions}: digests and declared assumptions used for reasoning.
-  \item \textbf{Governed metrics}: confidence/uncertainty/evidence coverage used at decision time.
-  \item \textbf{Side-effects}: tool events (or capability usage) when in TM-B deployments.
+\section{Formal Execution Model}
+
+\subsection{Runs, events, and canonical commitments}
+
+Let a run be
+\[
+  R = (E, A, \Pi),
+\]
+where $E=(e_1,\ldots,e_n)$ is the committed event sequence, $A$ is the immutable
+anchor tuple, and $\Pi$ is the verifier policy relevant to externally visible
+actions.
+
+For each event $e_i$, define:
+\[
+ e_i =
+ (\mathit{id}_i,\mathit{type}_i,\mathit{seq}_i,\mathit{run}_i,
+  \mathit{task}_i,A_i,p_i,h_{i-1},h_i),
+\]
+where $p_i$ is the event payload and $h_i$ is its commitment.
+The genesis predecessor is
+\[
+ h_0 = 0^{256}.
+\]
+For $i\ge1$,
+\[
+ h_i =
+ \mathrm{SHA256}\left(
+   \mathrm{JCS}\left(e_i \setminus \{h_i\}\right)
+ \right),
+\]
+where JCS is RFC~8785 canonical JSON \cite{rfc8785}.
+
+The anchor tuple is:
+\[
+ A =
+ \left(
+ H(\mathit{role}),
+ H(\mathit{objective}),
+ H(\mathit{policy})
+ \right).
+\]
+A conforming trace requires $A_i=A$ for every event.
+
+\subsection{Tool authorization relation}
+
+Let a tool request be $q=(t,d_a,r)$, where $t$ is the tool identity, $d_a$ is
+the canonical argument digest, and $r$ is the request event identifier.
+An authorization event yields permit
+\[
+ p=(t,d_a,r,\pi,a),
+\]
+binding the tool, argument digest, request, policy anchor $\pi$, and
+authorization-event identifier $a$.
+
+For an execution event $x$, the verifier requires:
+\[
+ \mathrm{Exec}(x) \Rightarrow
+ \exists p \;[
+   x.\mathit{permit}=p.a \land
+   x.\mathit{tool}=p.t \land
+   x.\mathit{request}=p.r
+ ].
+\]
+When the verifier is configured with an external allow-set or policy view, it
+also requires $p.t\in\Pi$.
+
+\subsection{Separated decision validation}
+
+For optional Actor--Critic--Judge validation, an approval receipt is:
+\[
+ d=(a,c,j,h_p,h_c,\mathcal{E},v),
+\]
+where $a,c,j$ are Actor, Critic, and Judge identities; $h_p$ and $h_c$ are
+proposal and critique digests; $\mathcal{E}$ is the evidence-reference set; and
+$v$ is the verdict. For $v=\mathrm{approved}$:
+\[
+ a\ne c,\quad a\ne j,\quad c\ne j,\quad |\mathcal{E}|>0.
+\]
+AARC reserves the acronym \emph{ACJ} for the Agentic Change Journal. The
+Actor--Critic--Judge pattern is therefore referred to descriptively or as
+Separated Decision Validation (SDV).
+
+\subsection{Verifier properties}
+
+The reference verifier checks the following safety properties.
+
+\paragraph{P1: Ordered integrity.}
+Sequence numbers are contiguous, each predecessor hash equals the prior committed
+hash, and each event commitment recomputes under JCS.
+
+\paragraph{P2: Anchor invariance.}
+All events carry the genesis role, objective, and policy anchors.
+
+\paragraph{P3: Permit safety.}
+No \texttt{tool.executed} or \texttt{tool.failed} event is valid without a
+matching authorization permit.
+
+\paragraph{P4: Non-self-approval evidence.}
+An approved SDV receipt requires pairwise-distinct role identities plus proposal,
+critique, and evidence commitments.
+
+\paragraph{P5: Lifecycle closure.}
+A run begins with \texttt{task.start} and a completed trace ends with exactly
+one terminal event. No event may follow termination.
+
+\subsection{Conditional guarantees}
+
+P1 detects mutation, deletion, duplication, and reordering relative to a trusted
+checkpoint, assuming SHA-256 collision resistance. It does not prevent an
+attacker who controls the entire committer from fabricating a new internally
+consistent history and replacing every checkpoint. Deployments that require
+origin authenticity must add signatures, authenticated storage, or a transparency
+log. Similarly, P3 prevents unauthorized execution only when the Tool Gateway is
+an unavoidable side-effect boundary.
+
+These conditions are part of the contract rather than implementation footnotes.
+
+\section{State Vector and Audit Evidence}
+
+The AARC State Vector is a schema-valid snapshot intended for independent audit.
+Version v\specVersion{} requires:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Identity}: agent, root-agent, optional parent-agent, role, and
+  role digest;
+  \item \textbf{Intent}: immutable objective and policy digests;
+  \item \textbf{Trace coordinates}: run, task, step, sequence, and predecessor
+  event commitment;
+  \item \textbf{Inputs and outputs}: structured, deployment-defined summaries;
+  \item \textbf{Tools}: structured tool-status records;
+  \item \textbf{Confidence metadata}: optional confidence, uncertainty, and
+  evidence-coverage values;
+  \item \textbf{Policy}: an explicit policy identifier and deployment-defined
+  constraints;
+  \item \textbf{Assumptions and evidence references}: externally inspectable
+  statements and pointers.
 \end{itemize}
 
-The design goal is simple: a verifier can read a sequence of State Vectors and
-determine whether invariants were upheld without depending on an agent’s internal
-reasoning trace.
+The schema deliberately records \emph{declared assumptions}, not internal
+reasoning traces. This separation supports auditability without making hidden
+chain-of-thought a conformance dependency.
 
-\section{Actor--Critic--Judge (ACJ) Protocol (Non-Self-Approval)}
-AARC uses an Actor--Critic--Judge protocol to prevent self-approval.
-\begin{itemize}
-  \item The \textbf{Actor} generates a proposal and must not finalize approval.
-  \item The \textbf{Critic} evaluates the proposal using required attack vectors
-        (e.g., evidence gaps, contradiction, boundary violation, hallucination risk).
-  \item The \textbf{Judge} issues the only valid approval decision and records governed metrics.
-\end{itemize}
+\section{Tool Gateway and Change Provenance}
 
-In AARC-compliant systems, a proposal becomes ``approved'' only if the Judge (and,
-where configured, receipt verification) confirms that the Critic evaluation and
-decision chain are present and consistent with the run’s immutable anchors.
+\subsection{Fail-closed Tool Gateway}
 
-\section{Runtime Contract and Enforcement Boundary}
-AARC is designed around an enforcement boundary:
-\begin{itemize}
-  \item A \textbf{Monitor} is authoritative for commit order, invariant checks,
-        override envelope enforcement, and kill-switch execution.
-  \item In TM-B deployments, a \textbf{Tool Gateway} mediates all tool calls via
-        capability tokens and logs TOOL\_EVENT entries as State Vectors.
-\end{itemize}
+The Tool Gateway mediates side effects outside model-generated text.
+A request produces \texttt{tool.requested}; the gateway commits exactly one
+authorization or denial decision; execution references the authorization event.
+Unknown tools, malformed policy state, missing permits, or verifier errors must
+resolve to denial.
 
-This separation is essential: policy-scoped side effects are enforced outside the
-agent’s own text generation loop. If identity or intent invariants are violated
-mid-run, the Monitor revokes capabilities and terminates the run.
+AARC does not prescribe how the policy decision is computed. This is the main
+interoperability boundary with specialized runtime-enforcement research.
 
-\section{Patch Ledger (Evolution Record)}
-The patch ledger is an append-only record of protocol fixes and release closures.
-Each patch entry is intended to be linkable to motivating evidence (telemetry
-and/or validation findings) and supports operational governance:
-auditors can answer ``what changed'' and ``why'' across versions.
+\subsection{Agentic Change Journal}
 
-\section{Formal Invariants and Properties}
-AARC v1.0.5 requires the following invariants and properties across implementations:
-\begin{itemize}
-  \item \textbf{I1 (Identity Invariance)}: role/identity anchors must not change
-        after GENESIS. \textit{Enforced by}: Monitor checks at commit and tool boundaries.
-  \item \textbf{I2 (Intent Invariance)}: objective/policy anchors (and root hashes)
-        must remain immutable for the run. \textit{Enforced by}: Monitor hash checks and kill-switch.
-  \item \textbf{P1 (State Vector Completeness)}: lifecycle steps emit schema-valid
-        State Vectors with traceability and inputs/assumptions. \textit{Enforced by}:
-        schema validation and runtime contract.
-  \item \textbf{P2 (Non-Self-Approval)}: Actor cannot unilaterally approve; approval
-        requires Critic evaluation and Judge decision. \textit{Enforced by}: ACJ protocol and
-        receipt verification (where configured).
-  \item \textbf{P3 (Policy-Scoped Side Effects)}: tool calls must be policy-scoped and,
-        in TM-B, capability-gated. \textit{Enforced by}: Tool Gateway + Monitor revocation.
-  \item \textbf{P4 (Conformance Gate)}: releases are valid only when schema checks,
-        paper build, and arXiv bundle packaging succeed. \textit{Enforced by}:
-        CI conformance checks and release scripts.
-\end{itemize}
+The Agentic Change Journal (ACJ) records material changes to model, prompt,
+policy, configuration, code, or runtime posture. Published entries are
+append-only: corrections supersede older entries rather than rewriting them.
+The patch ledger links remediation artifacts and verification evidence to these
+change records.
+
+This distinction is important operationally. Runtime events answer
+“what happened in this run?”; ACJ and patch-ledger records answer
+“what changed in the system, why, and how was the change verified?”
 
 \section{Threat Model}
-\begin{table}[h]
-  \centering
-  \begin{tabular}{p{0.28\linewidth} p{0.44\linewidth} p{0.20\linewidth}}
-    \toprule
-    Attack & Mitigation & Residual Risk \\
-    \midrule
-    Telemetry tampering / missing logs &
-    Append-only State Vectors; integrity metadata; Monitor-authoritative commit ordering &
-    Low--Medium (depends on storage trust) \\
-    Goal or role drift mid-run &
-    Immutable anchors (root objective/policy/role tokens); Monitor kill-switch &
-    Low \\
-    Self-approval loops &
-    ACJ separation of duties (Actor/Critic/Judge); receipt verification for approvals &
-    Low \\
-    Unauthorized tool invocation &
-    Policy-scoped tool events; capability-gated Tool Gateway (TM-B); Monitor revocation &
-    Low--Medium (depends on gateway isolation) \\
-    Silent spec changes &
-    Versioned spec filenames; embedded spec hash in PDF builds &
-    Low \\
-    \bottomrule
-  \end{tabular}
-  \caption{Threat model for AARC deployments.}
+
+Table~\ref{tab:threats} summarizes the intended boundary.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabularx}{\linewidth}{p{0.23\linewidth} X p{0.25\linewidth}}
+\toprule
+Threat & AARC mechanism & Required assumption / residual risk \\
+\midrule
+Post-commit log mutation &
+Sequence and JCS/SHA-256 hash-chain verification &
+A trusted checkpoint, signature, or protected copy is needed against total-history replacement. \\
+Role/objective/policy drift &
+Immutable genesis anchors checked on every event &
+The authoritative monitor itself must not be compromised. \\
+Tool execution without authorization &
+Request--authorization--execution permit binding &
+The gateway must be an unavoidable side-effect path. \\
+Self-approval &
+Pairwise-distinct Actor/Critic/Judge identities and evidence-bound receipts &
+Distinct identifiers do not prove independent organizational control. \\
+Ambiguous cross-runtime hashing &
+RFC~8785 JCS canonicalization and shared test vectors &
+Inputs must remain in the I-JSON/JCS domain. \\
+Missing audit evidence &
+Schema-required fields, explicit assumptions, evidence references, ACJ and patch ledger &
+AARC cannot guarantee that supplied evidence is truthful or complete beyond the schema. \\
+\bottomrule
+\end{tabularx}
+\caption{Threat model and the assumptions under which AARC mechanisms are meaningful.}
+\label{tab:threats}
 \end{table}
 
-\section{Conformance Test Plan}
-An implementation is AARC-compliant when the following checks pass:
-\begin{enumerate}
-  \item \textbf{Schema validation}: emitted State Vectors validate against the v1.0.5 schema.
-  \item \textbf{Anchor immutability}: root objective/policy/identity anchors remain constant
-        after GENESIS; violations trigger kill-switch.
-  \item \textbf{ACJ validity}: proposals are evaluated by Critic and finalized only by Judge;
-        Actor cannot approve.
-  \item \textbf{Policy-scoped tooling}: tool usage is logged and policy-scoped; in TM-B, calls
-        require valid capability tokens.
-  \item \textbf{Release checks}: schema sanity, paper build, and arXiv packaging succeed.
+\section{Reference Implementation}
+
+The artifact contains independent Python and TypeScript monitors. Both
+implement event commitments, immutable anchors, tool request/permit binding,
+SDV receipts, and offline trace verification. Python uses the Trail of Bits
+RFC~8785 implementation; TypeScript uses the RFC-referenced
+\texttt{canonicalize} implementation. A shared canonicalization vector includes
+a floating-point normalization case that would fail under naive language-default
+serialization.
+
+Two JSON Schemas define the wire contract:
+\texttt{AARC\_RUNTIME\_EVENT.schema.v1\_1\_0.json} and
+\texttt{AARC\_STATE\_VECTOR.schema.v1\_1\_0.json}. The schemas themselves are
+validated against JSON Schema Draft 2020-12, after which positive runtime
+fixtures are validated.
+
+The reference implementation intentionally keeps the policy engine simple.
+Its allow-set is not presented as a state-of-the-art policy language; it is a
+minimal enforcement point used to test the AARC evidence semantics. Production
+deployments can substitute a stronger decision engine while retaining the same
+request, authorization, and execution bindings.
+
+\section{Evaluation}
+
+\subsection{Research questions}
+
+We evaluate four questions.
+
+\begin{description}[leftmargin=1.8cm,style=nextline]
+  \item[RQ1] Does a valid reference execution satisfy both schemas and the
+  semantic verifier?
+  \item[RQ2] Does the verifier reject representative structural and semantic
+  corruptions, including attacks that recompute the hash chain?
+  \item[RQ3] Do Python and TypeScript agree on the canonical cryptographic input
+  for a cross-language JCS test vector?
+  \item[RQ4] Does verification scale linearly with event count in the reference
+  implementation?
+\end{description}
+
+\subsection{Adversarial conformance suite}
+
+The clean fixture includes a genesis event, state snapshot, valid SDV approval,
+authorized tool request, permit, execution result, and terminal event.
+The benchmark then creates 11 corrupted traces.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabularx}{\linewidth}{X c l}
+\toprule
+Injected fault & Rehashed after attack? & Expected detector \\
+\midrule
+Missing event & No & sequence/hash continuity \\
+Reordered events & No & sequence/hash continuity \\
+Duplicated event & No & sequence continuity \\
+Payload tamper & No & event hash \\
+Policy-anchor drift & Yes & anchor invariance \\
+Sequence gap & Yes & contiguous ordering \\
+Broken predecessor link & No & hash continuity \\
+Execution with forged permit & Yes & permit relation \\
+Unauthorized tool substitution & Yes & verifier policy + permit semantics \\
+Actor self-approval & Yes & SDV identity separation \\
+Missing terminal event & Yes & lifecycle closure \\
+\bottomrule
+\end{tabularx}
+\caption{Adversarial conformance cases. Rehashed cases are intentionally
+important: they test semantic invariants rather than merely detecting stale
+checksums.}
+\label{tab:faults}
+\end{table}
+
+The deterministic release benchmark accepts the clean trace and rejects all
+11 injected faults, for an injected-fault detection rate of $11/11$ under this
+test model. This number must not be interpreted as an empirical estimate of
+real-world attack coverage. It establishes that the reference verifier enforces
+the enumerated invariants against these fixtures.
+
+Figure~\ref{fig:verification} summarizes the verification stack.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/aarc_verification.pdf}
+  \caption{Verification proceeds from schema shape through integrity, anchors,
+  semantic permit/approval constraints, and lifecycle closure.}
+  \label{fig:verification}
+\end{figure}
+
+\subsection{Cross-language canonicalization}
+
+The interoperability test canonicalizes
+\[
+\{\texttt{"b"}:1.0,\texttt{"a"}:\texttt{"x"}\}
+\]
+to the RFC~8785 representation
+\[
+\texttt{\{"a":"x","b":1\}},
+\]
+then checks the shared SHA-256 digest
+\texttt{cdab067e9f3beb32d1252cfd63e492592fecbf591b0d08cadb24bb17f3864246}
+in both implementations. This catches a concrete failure mode in naive
+cross-language hashing, where Python and JavaScript may serialize numerically
+equivalent values differently.
+
+\subsection{Scaling methodology}
+
+The artifact also measures commit and verification cost on traces containing
+100, 1000, and 5000 heartbeat events, taking the median of five repetitions for
+each size. CI exports the machine-readable results rather than treating any
+single hosted-runner latency as a normative constant. The verifier is a single
+pass over the trace and therefore has $O(n)$ event complexity, with per-event
+cost dominated by JCS canonicalization, SHA-256, and semantic bookkeeping.
+
+\subsection{Interpretation}
+
+The evaluation is intentionally narrower than AgentSpec, VIGIL, ActGov, or
+agent-security benchmarks: it does not measure how often AARC discovers
+previously unknown unsafe model behavior. It tests whether an implementation
+faithfully enforces the AARC contract. This distinction preserves a clean
+separation between \emph{contract conformance} and \emph{policy effectiveness}.
+
+\section{Reproducibility and Release Discipline}
+
+The publication pipeline is part of the artifact. Every candidate build:
+
+\begin{enumerate}[leftmargin=*]
+  \item validates both JSON Schemas and a positive fixture;
+  \item runs Python unit and adversarial conformance tests;
+  \item emits machine-readable conformance and scaling results;
+  \item compiles and tests the TypeScript implementation;
+  \item regenerates architecture figures;
+  \item computes a deterministic hash over the normative v\specVersion{}
+  specification files;
+  \item fails on LaTeX or BibTeX errors; and
+  \item builds an arXiv source bundle containing the exact normative
+  specification snapshot used by the paper.
 \end{enumerate}
 
-\section{Ablation Analysis}
-Removing AARC components produces predictable reliability regressions:
-\begin{itemize}
-  \item \textbf{Without the Monitor}: anchor immutability and kill-switch enforcement degrade,
-        increasing drift and tool misuse risk.
-  \item \textbf{Without ACJ}: proposals can self-validate, increasing false approvals and
-        reducing audit confidence.
-  \item \textbf{Without the Tool Gateway (TM-B)}: tool calls become harder to constrain and
-        attribute, weakening policy-scoped side-effect guarantees.
-\end{itemize}
+This closes a common gap between a paper's prose claims and the versioned
+artifact readers can actually inspect. The embedded specification hash lets a
+reader detect a paper/spec mismatch at build time.
+
+\section{Limitations}
+
+AARC has several important limitations.
+
+First, the current artifact evaluates conformance properties on synthetic traces;
+it does not yet report end-to-end task utility or attack success rate on
+AgentDojo, $\tau$-bench, or DUMA-Bench. Those benchmarks measure questions that
+AARC deliberately does not collapse into the conformance score.
+
+Second, the reference Tool Gateway uses a minimal allow-set. Rich temporal,
+argument, value-flow, and probabilistic policies are better delegated to systems
+such as VIGIL, ActGov, AgentSpec, or Pro2Guard.
+
+Third, the event hash chain is not a signature scheme. Strong provenance requires
+authenticated checkpoints or an external transparency mechanism.
+
+Fourth, SDV role separation is syntactic unless identities are bound to
+independent authenticated principals.
+
+Finally, AARC standardizes evidence structure but cannot guarantee the semantic
+truth of evidence supplied by a compromised upstream component.
+
+\section{Discussion and Future Work}
+
+The most useful next step is integration rather than adding another policy
+language. AARC adapters can wrap modern runtime enforcers and export a common
+event stream, allowing the same audit verifier to compare heterogeneous agent
+stacks. Similarly, AgentDojo or $\tau$-family trajectories can be enriched with
+AARC authorization and provenance receipts so benchmark outcomes are accompanied
+by machine-verifiable execution evidence.
+
+A second direction is authenticated provenance. The current contract already
+separates hash-chain integrity from authenticity; future profiles can specify
+detached signatures, hardware-backed identities, or transparency-log
+checkpoints without changing the event semantics.
+
+A third direction is distributed and multi-agent causality. The v\specVersion{}
+schema carries root and parent agent identifiers but does not yet define a
+full distributed partial-order protocol. Extending AARC with signed causal
+links while retaining deterministic local verification is a natural next step.
 
 \section{Conclusion}
-AARC v1.0.5 provides a concise, interoperable foundation for auditable agentic systems:
-machine-verifiable State Vectors, a non-self-approving validation protocol, and a hard
-enforcement boundary for identity/intent invariance and policy-scoped side effects.
-Future work will expand adapters and conformance tooling while preserving the minimal
-core protocol.
+
+AARC addresses a narrow but increasingly important reliability problem:
+independent verification of the execution envelope around a tool-using AI
+agent. Version v\specVersion{} turns earlier descriptive claims into executable
+contract semantics: explicit schemas, immutable anchors, RFC~8785 event
+commitments, fail-closed tool permits, separated approval evidence, append-only
+change provenance, and cross-language reference monitors.
+
+The main result is not that AARC makes an arbitrary agent safe. It is that a
+specific class of runtime claims can be represented portably and checked
+deterministically, with the paper, specification, implementation, tests, and
+release artifacts cryptographically tied to the same versioned contract. That
+provides a practical substrate on which stronger policy engines, security
+benchmarks, and reliability evaluations can build.
 
 \bibliographystyle{plain}
 \bibliography{aarc}
+
 \end{document}
