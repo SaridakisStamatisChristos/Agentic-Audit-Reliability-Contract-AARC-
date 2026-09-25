@@ -534,14 +534,40 @@ in both implementations. This catches a concrete failure mode in naive
 cross-language hashing, where Python and JavaScript may serialize numerically
 equivalent values differently.
 
-\subsection{Scaling methodology}
+\subsection{Scaling results}
 
-The artifact also measures commit and verification cost on traces containing
-100, 1000, and 5000 heartbeat events, taking the median of five repetitions for
-each size. CI exports the machine-readable results rather than treating any
-single hosted-runner latency as a normative constant. The verifier is a single
-pass over the trace and therefore has $O(n)$ event complexity, with per-event
-cost dominated by JCS canonicalization, SHA-256, and semantic bookkeeping.
+We measured commit and verification cost on traces containing 100, 1000, and
+5000 heartbeat events, taking the median of five repetitions for each size.
+Table~\ref{tab:scaling} reports the September 25, 2026 publication-gate run on
+a GitHub-hosted Ubuntu 24.04 runner with CPython 3.12.14. These values are
+environment-specific and are retained as machine-readable CI artifacts rather
+than treated as normative constants.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{r r r r r}
+\toprule
+Events & Commit $\mu$s/event & Verify $\mu$s/event & Commit events/s & Verify events/s \\
+\midrule
+102  & 31.83 & 20.00 & 31,414 & 50,001 \\
+1002 & 31.14 & 19.88 & 32,108 & 50,304 \\
+5002 & 31.22 & 20.73 & 32,034 & 48,229 \\
+\bottomrule
+\end{tabular}
+\caption{Median AARC v1.1.0 reference-monitor scaling over five repetitions.
+Per-event cost remains approximately constant across a 49$\times$ increase in
+trace length.}
+\label{tab:scaling}
+\end{table}
+
+The near-constant per-event cost supports the expected linear behavior of the
+single-pass verifier: from 102 to 5002 events, median verification cost changes
+from 20.00 to 20.73~$\mu$s/event, while commit cost changes from 31.83 to
+31.22~$\mu$s/event. The dominant operations are JCS canonicalization, SHA-256,
+and small constant-size semantic checks. These measurements characterize the
+reference implementation only; they do not include networked policy-engine,
+storage, signature, or tool-execution latency.
 
 \subsection{Interpretation}
 
