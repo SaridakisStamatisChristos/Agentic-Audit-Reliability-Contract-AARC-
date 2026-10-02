@@ -22,6 +22,15 @@
 \begin{document}
 \maketitle
 
+\begin{center}
+\small
+\textbf{Manuscript revision 1.1.1 (October 2, 2026).}
+This revision updates literature positioning and publication metadata only;
+the normative AARC contract, schemas, reference monitors, and conformance
+semantics remain v\specVersion{}.
+\end{center}
+
+
 \begin{abstract}
 Tool-using AI agents increasingly execute long-horizon workflows whose correctness
 depends not only on model outputs but also on authorization, execution order,
@@ -197,6 +206,53 @@ which policy anchor governed it, and whether later execution matched that
 permit. An AARC Tool Gateway may therefore delegate policy evaluation to
 AgentSpec, VIGIL, ActGov, a capability system, an ABAC/RBAC engine, or a
 deployment-specific decision point.
+
+\subsection{Transactional containment and agentic transaction processing}
+
+Cordon introduces a semantic-transaction boundary for tool-using agents:
+reversible local mutations and outward-facing effects are staged, the composed
+execution flow is validated before commit, and recovery metadata is retained for
+rollback and audit \cite{chen2026cordon}. Mnemosyne develops Agentic Transaction
+Processing (ATP), treating generated workflow actions as untrusted proposals
+until deterministic admission under an executable constraint set; its runtime
+combines an append-only transition log, effective-state projection,
+dependency-safe compensation, and bounded reactive repair
+\cite{chang2026mnemosyne}. These systems are substantially closer to AARC than
+per-call guardrails because they also move authority from model-generated text
+into runtime-controlled state transitions.
+
+The emphasis remains different. Cordon and ATP define transaction, staging,
+admission, and repair semantics for consequential workflows. AARC defines a
+portable evidence and conformance contract that heterogeneous runtimes can emit
+and independently verify, including canonical event commitments, immutable
+anchors, authorization receipts, separated approval evidence, and lifecycle
+closure. A transactional runtime can therefore emit AARC records without AARC
+prescribing that runtime's transaction or repair algorithm.
+
+\subsection{Concurrent and subsequent assurance-contract work}
+
+The publication-grade AARC v1.1.0 repository state was committed publicly on
+September 25, 2026 at Git commit
+\href{https://github.com/SaridakisStamatisChristos/Agentic-Audit-Reliability-Contract-AARC-/commit/3aa462a04dd5d0b5778012577fd379e34bd0e71f}
+{\texttt{3aa462a04dd5d0b5778012577fd379e34bd0e71f}}.
+The present v1.1.1 manuscript revision leaves the normative v1.1.0 contract
+unchanged and updates literature positioning only.
+
+Zabolotnii's \emph{Runtime Assurance Contract} (RAC), submitted September 30,
+2026, formalizes how runtime evidence changes an agent's operational authority
+through autonomy boundaries, component eligibility, evidence state, transition
+policy, human-review capacity, and mandatory non-compensatory gates
+\cite{zabolotnii2026rac}. RAC overlaps with AARC in externalizing consequential
+authorization from the model, carrying explicit policy/evidence context, and
+using fail-closed runtime gating. Its central problem is nevertheless different:
+RAC asks when accumulated evidence permits an authority transition and prevents
+mandatory failures from being offset by aggregate scores, whereas AARC asks how
+an executed agent run can expose a portable, machine-verifiable record of
+ordering, anchors, authorization, approval, and provenance across runtimes.
+
+RAC is therefore treated here as subsequent related work rather than as an
+influence on the September 25 AARC v1.1.0 artifact. This chronology establishes
+version provenance only; it does not imply dependence or copying.
 
 \section{Design Goals}
 
