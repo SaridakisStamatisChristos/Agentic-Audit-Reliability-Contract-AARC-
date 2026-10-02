@@ -1,11 +1,12 @@
 cff-version: 1.2.0
-message: "If you use AARC or its reference implementation, please cite this repository and companion paper. Release v1.1.1 updates literature positioning only; the normative contract remains v1.1.0."
+message: "If you use AARC or its reference implementation, please cite the Zenodo preprint and this repository. Release v1.1.2 updates publication metadata only; the normative contract remains v1.1.0."
 title: "Agentic Audit & Reliability Contract"
 type: software
 authors:
   - family-names: "Saridakis"
     given-names: "Stamatis-Christos"
-version: "1.1.1"
+    orcid: "https://orcid.org/0009-0002-1699-2043"
+version: "1.1.2"
 date-released: "2026-10-02"
 repository-code: "https://github.com/SaridakisStamatisChristos/Agentic-Audit-Reliability-Contract-AARC-"
 url: "https://github.com/SaridakisStamatisChristos/Agentic-Audit-Reliability-Contract-AARC-"
@@ -16,5 +17,8 @@ preferred-citation:
   authors:
     - family-names: "Saridakis"
       given-names: "Stamatis-Christos"
+      orcid: "https://orcid.org/0009-0002-1699-2043"
   year: 2026
-  url: "https://github.com/SaridakisStamatisChristos/Agentic-Audit-Reliability-Contract-AARC-"
+  version: "1.1.1"
+  doi: "10.5281/zenodo.23107336"
+  url: "https://zenodo.org/records/23107336"

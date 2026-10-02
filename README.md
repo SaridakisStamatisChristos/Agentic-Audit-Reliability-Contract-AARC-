@@ -1,13 +1,16 @@
 # Agentic Audit & Reliability Contract (AARC)
 
-**Repository release:** v1.1.1  
+**Repository release:** v1.1.2  
 **Normative contract/specification:** v1.1.0
 
 AARC is a machine-verifiable execution contract for tool-using AI agents. It standardizes the observable evidence needed to verify runtime ordering, immutable intent anchors, tool authorization, separated approval identities, and change provenance without depending on hidden chain-of-thought.
 
-This branch contains the **v1.1.1 literature-positioning revision** of the companion paper, built on the unchanged **v1.1.0 normative contract and executable artifact**:
+Main now includes the **v1.1.2 publication-metadata patch**. The archived preprint remains **v1.1.1**, built on the unchanged **v1.1.0 normative contract and executable artifact**:
 
 > **AARC: A Machine-Verifiable Audit and Reliability Contract for Tool-Using AI Agents**
+>
+> Zenodo preprint v1.1.1: **https://doi.org/10.5281/zenodo.23107336**  
+> Author ORCID: **https://orcid.org/0009-0002-1699-2043**
 
 ## What v1.1.0 adds
 
@@ -71,6 +74,8 @@ AARC conformance means the externally observable runtime trace satisfies the spe
 v1.1.0 is a semantic upgrade from v1.0.5. Existing v1.0.5 files remain in the repository as historical artifacts. New incompatible semantics must use a new specification version rather than silently changing the meaning of an existing version.
 
 v1.1.1 is a **paper and publication-metadata patch only**. It adds literature positioning for Cordon, Mnemosyne/ATP, and the September 30, 2026 Runtime Assurance Contract paper. It does **not** change the normative runtime contract, schemas, reference monitors, conformance semantics, or September 25 evaluation results.
+
+v1.1.2 is a **repository metadata-only patch** that records the Zenodo preprint DOI and author ORCID. It does not modify the v1.1.1 paper file, normative specifications, runtime schemas, reference monitors, conformance logic, or evaluation results.
 
 The active normative version is declared in `SPEC_VERSION` and remains **1.1.0**. Publication builds compute a deterministic hash over that normative spec set and embed the hash in the PDF.
 
