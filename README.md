@@ -1,8 +1,11 @@
-# Agentic Audit & Reliability Contract (AARC) v1.1.0
+# Agentic Audit & Reliability Contract (AARC)
+
+**Repository release:** v1.1.1  
+**Normative contract/specification:** v1.1.0
 
 AARC is a machine-verifiable execution contract for tool-using AI agents. It standardizes the observable evidence needed to verify runtime ordering, immutable intent anchors, tool authorization, separated approval identities, and change provenance without depending on hidden chain-of-thought.
 
-This branch contains the **v1.1.0 publication candidate** and companion paper:
+This branch contains the **v1.1.1 literature-positioning revision** of the companion paper, built on the unchanged **v1.1.0 normative contract and executable artifact**:
 
 > **AARC: A Machine-Verifiable Audit and Reliability Contract for Tool-Using AI Agents**
 
@@ -67,7 +70,9 @@ AARC conformance means the externally observable runtime trace satisfies the spe
 
 v1.1.0 is a semantic upgrade from v1.0.5. Existing v1.0.5 files remain in the repository as historical artifacts. New incompatible semantics must use a new specification version rather than silently changing the meaning of an existing version.
 
-The active version is declared in `SPEC_VERSION`. Publication builds compute a deterministic hash over the active normative spec set and embed that hash in the PDF.
+v1.1.1 is a **paper and publication-metadata patch only**. It adds literature positioning for Cordon, Mnemosyne/ATP, and the September 30, 2026 Runtime Assurance Contract paper. It does **not** change the normative runtime contract, schemas, reference monitors, conformance semantics, or September 25 evaluation results.
+
+The active normative version is declared in `SPEC_VERSION` and remains **1.1.0**. Publication builds compute a deterministic hash over that normative spec set and embed the hash in the PDF.
 
 ## Historical name
 
