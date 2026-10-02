@@ -1,12 +1,12 @@
 cff-version: 1.2.0
-message: "If you use AARC or its reference implementation, please cite this repository and companion paper."
+message: "If you use AARC or its reference implementation, please cite this repository and companion paper. Release v1.1.1 updates literature positioning only; the normative contract remains v1.1.0."
 title: "Agentic Audit & Reliability Contract"
 type: software
 authors:
   - family-names: "Saridakis"
     given-names: "Stamatis-Christos"
-version: "1.1.0"
-date-released: "2026-09-25"
+version: "1.1.1"
+date-released: "2026-10-02"
 repository-code: "https://github.com/SaridakisStamatisChristos/Agentic-Audit-Reliability-Contract-AARC-"
 url: "https://github.com/SaridakisStamatisChristos/Agentic-Audit-Reliability-Contract-AARC-"
 license: MIT
