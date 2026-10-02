@@ -3,6 +3,12 @@
 ## Unreleased
 - Publication review and external benchmark integrations remain future work.
 
+## 1.1.2 — 2026-10-02
+- Record the Zenodo preprint DOI `10.5281/zenodo.23107336` for AARC v1.1.1.
+- Add author ORCID `0009-0002-1699-2043` to citation metadata.
+- Update README publication links and citation guidance.
+- Metadata-only patch: no changes to the v1.1.1 paper file, normative v1.1.0 contract, schemas, monitors, conformance semantics, or evaluation results.
+
 ## 1.1.1 — 2026-10-02
 - Update the companion manuscript's literature positioning without changing AARC v1.1.0 normative semantics.
 - Add Cordon and Mnemosyne/Agentic Transaction Processing as close transactional-runtime prior art.
