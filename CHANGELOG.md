@@ -3,6 +3,13 @@
 ## Unreleased
 - Publication review and external benchmark integrations remain future work.
 
+## 1.1.1 — 2026-10-02
+- Update the companion manuscript's literature positioning without changing AARC v1.1.0 normative semantics.
+- Add Cordon and Mnemosyne/Agentic Transaction Processing as close transactional-runtime prior art.
+- Add *Trust Is Not a Score: Runtime Assurance Contracts for High-Risk AI Agents* as subsequent related work submitted September 30, 2026.
+- Record explicit provenance for the public AARC v1.1.0 September 25, 2026 commit.
+- Clarify that v1.1.1 changes paper/bibliography/publication metadata only; schemas, monitors, conformance semantics, and v1.1.0 evaluation results remain unchanged.
+
 ## 1.1.0 — 2026-09-25
 - Replace permissive v1.0.5 State Vector semantics with explicit v1.1.0 runtime-event and state-vector schemas.
 - Add immutable role, objective, and policy anchors.
